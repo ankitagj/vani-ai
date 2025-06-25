@@ -1,0 +1,129 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+build/
+develop-eggs/
+dist/
+downloads/
+eggs/
+.eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+wheels/
+pip-wheel-metadata/
+share/python-wheels/
+*.egg-info/
+.installed.cfg
+*.egg
+MANIFEST
+
+# Virtual Environment
+ai_env/
+venv/
+env/
+ENV/
+env.bak/
+venv.bak/
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# OS
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+
+# Logs
+*.log
+logs/
+pipeline.log
+
+# Model files (these can be large)
+*.bin
+*.safetensors
+*.pt
+*.pth
+*.ckpt
+*.h5
+
+# Trained models directory
+intent_classifier/
+response_generator/
+intent_classifier_final/
+response_generator_final/
+
+# Audio files (can be large)
+call_recordings/*.wav
+call_recordings/*.mp3
+call_recordings/*.m4a
+call_recordings/*.flac
+call_recordings/*.ogg
+processed_audio/*.wav
+processed_audio/*.mp3
+
+# Training data (might contain sensitive information)
+training_data.json
+sample_training_data.json
+
+# Temporary files
+*.tmp
+*.temp
+temp/
+tmp/
+
+# Jupyter Notebook
+.ipynb_checkpoints
+
+# Environment variables
+.env
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
+
+# Cache
+.cache/
+*.cache
+
+# PyTorch
+*.pth
+*.pt
+
+# Transformers cache
+.transformers_cache/
+
+# Whisper cache
+.whisper_cache/
+
+# Hugging Face cache
+.huggingface/
+
+# CUDA
+*.cu
+*.cuh
+
+# Testing
+.pytest_cache/
+.coverage
+htmlcov/
+
+# Documentation
+docs/_build/
+
+# Local configuration
+config.local.json
+settings.local.json
