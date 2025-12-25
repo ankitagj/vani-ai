@@ -127,3 +127,4 @@ docs/_build/
 # Local configuration
 config.local.json
 settings.local.json
+transcripts/
