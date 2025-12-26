@@ -61,9 +61,22 @@ class MultilingualConversationModelTrainer:
         label_ids = [self.label_to_id[label] for label in labels]
         
         # Split data
-        train_texts, val_texts, train_labels, val_labels = train_test_split(
-            texts, label_ids, test_size=0.2, random_state=42, stratify=label_ids
-        )
+        # Adjust test_size for small datasets to ensure all classes can be represented
+        test_size = 0.2
+        if len(texts) < 50 and len(texts) * test_size < len(unique_labels):
+            test_size = len(unique_labels) / len(texts) + 0.05 # Ensure slightly more than minimum
+            if test_size > 0.5: test_size = 0.5
+            
+        try:
+            train_texts, val_texts, train_labels, val_labels = train_test_split(
+                texts, label_ids, test_size=test_size, random_state=42, stratify=label_ids
+            )
+        except ValueError:
+            # Fallback for very small datasets or if stratification fails
+            print("Warning: Stratified split failed, falling back to random split")
+            train_texts, val_texts, train_labels, val_labels = train_test_split(
+                texts, label_ids, test_size=test_size, random_state=42, stratify=None
+            )
         
         return {
             "train_texts": train_texts,
@@ -73,7 +86,7 @@ class MultilingualConversationModelTrainer:
             "num_labels": len(unique_labels)
         }
     
-    def train_intent_classifier(self, model_name="microsoft/mdeberta-v3-base"):
+    def train_intent_classifier(self, model_name="distilbert-base-multilingual-cased"):
         """Train a multilingual model to classify customer intents"""
         print("Training multilingual intent classifier...")
         self.logger.info(f"Using model: {model_name}")
@@ -111,7 +124,7 @@ class MultilingualConversationModelTrainer:
             weight_decay=0.01,
             logging_dir="./logs",
             logging_steps=10,
-            evaluation_strategy="epoch",
+            eval_strategy="epoch",
             save_strategy="epoch",
             load_best_model_at_end=True,
         )
@@ -160,10 +173,24 @@ class MultilingualConversationModelTrainer:
             conversations.append(conversation)
 
         # Split data while maintaining language distribution
-        train_convs, val_convs = train_test_split(
-            conversations, test_size=0.2, random_state=42,
-            stratify=[pair.get('primary_language', 'english') for pair in self.qa_pairs]
-        )
+        langs = [pair.get('primary_language', 'english') for pair in self.qa_pairs]
+        
+        # Check if we can stratify (need at least 2 examples per class)
+        from collections import Counter
+        counts = Counter(langs)
+        can_stratify = all(c >= 2 for c in counts.values())
+        
+        try:
+            train_convs, val_convs = train_test_split(
+                conversations, test_size=0.2, random_state=42,
+                stratify=langs if can_stratify else None
+            )
+        except ValueError:
+             # Fallback
+             train_convs, val_convs = train_test_split(
+                conversations, test_size=0.2, random_state=42,
+                stratify=None
+            )
 
         return train_convs, val_convs
     
@@ -211,7 +238,7 @@ class MultilingualConversationModelTrainer:
             weight_decay=0.01,
             logging_dir="./logs",
             logging_steps=10,
-            evaluation_strategy="epoch",
+            eval_strategy="epoch",
             save_strategy="epoch",
             load_best_model_at_end=True,
         )

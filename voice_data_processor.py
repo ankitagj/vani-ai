@@ -1,5 +1,5 @@
 # Install required packages:
-# pip install whisper-openai pydub librosa pandas scikit-learn transformers torch langdetect googletrans
+
 
 import whisper
 import os
@@ -11,7 +11,7 @@ import re
 from datetime import datetime
 import numpy as np
 from langdetect import detect, DetectorFactory
-from googletrans import Translator
+
 import logging
 
 # Set seed for consistent language detection
@@ -23,8 +23,7 @@ class MultilingualVoiceDataProcessor:
         print(f"Loading Whisper model ({whisper_model_size})...")
         self.whisper_model = whisper.load_model(whisper_model_size)
 
-        # Initialize translator for optional translation
-        self.translator = Translator()
+        
 
         # Setup logging
         logging.basicConfig(level=logging.INFO)

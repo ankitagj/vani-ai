@@ -27,7 +27,7 @@ def test_imports():
         
         # Test language processing imports
         from langdetect import detect
-        from googletrans import Translator
+        from google_trans_new import google_translator
         print("✓ Language processing libraries imported successfully")
         
         # Test custom modules

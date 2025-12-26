@@ -22,14 +22,7 @@ python transcribe_audio.py call_recordings/RD1.mp3 gemini --api-key AIzaSyAQV1Ao
 ## Step 3: Run Transcription
 
 ```bash
-# Try Gemini first (will fallback to Deepgram if quota exceeded)
-python transcribe_audio.py call_recordings/RD1.mp3
 
-# Or specify Gemini directly
-python transcribe_audio.py call_recordings/RD1.mp3 gemini
-
-# Or use Deepgram directly
-python transcribe_audio.py call_recordings/RD1.mp3 deepgram --api-key YOUR_DEEPGRAM_KEY
 ```
 
 ## Why Gemini?

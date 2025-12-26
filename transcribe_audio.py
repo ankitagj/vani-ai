@@ -18,141 +18,7 @@ except ImportError:
     TRANSLATION_AVAILABLE = False
     print("⚠️  deep-translator not installed. Install with: pip install deep-translator")
 
-def transcribe_with_deepgram(audio_path, api_key=None):
-    """Transcribe using Deepgram API (good for Hindi and mixed content)"""
-    try:
-        import asyncio
-        
-        if not api_key:
-            api_key = os.getenv('DEEPGRAM_API_KEY')
-            if not api_key:
-                print("⚠️  DEEPGRAM_API_KEY not found. Please set it as environment variable.")
-                print("   Get your API key from: https://console.deepgram.com/")
-                return None
-        
-        # Use DeepgramClient (SDK 5.x)
-        from deepgram import DeepgramClient
-        
-        print("🎤 Transcribing with Deepgram (auto-detecting language for Kannada/Hindi/English mix)...")
-        
-        # Initialize Deepgram client
-        deepgram = DeepgramClient(api_key=api_key)
-        
-        # Read audio file
-        with open(audio_path, "rb") as audio_file:
-            audio_data = audio_file.read()
-            
-            # Determine mimetype from file extension
-            mimetype = "audio/mp3"
-            if audio_path.endswith('.wav'):
-                mimetype = "audio/wav"
-            elif audio_path.endswith('.m4a'):
-                mimetype = "audio/m4a"
-            
-            # Configure options for Indian languages
-            # Note: Deepgram supports Hindi but not explicitly Kannada
-            # Try Hindi first, then auto-detect as fallback
-            options = {
-                "model": "nova-2",  # Latest model
-                "language": "hi",  # Try Hindi (Deepgram supports it better than Kannada)
-                "smart_format": True,
-                "punctuate": True,
-                "diarize": True,  # Speaker diarization
-                "paragraphs": True,
-                "utterances": True,
-            }
-            
-            # Transcribe using asyncprerecorded
-            async def transcribe():
-                response = await deepgram.listen.asyncprerecorded.v("1").transcribe_file(
-                    {"buffer": audio_data, "mimetype": mimetype},
-                    options
-                )
-                
-                # Extract transcript from response
-                # Response is a PrerecordedResponse object with .results attribute
-                results = response.results
-                
-                # Get channels from results
-                channels = results.channels if hasattr(results, 'channels') else []
-                
-                if not channels or len(channels) == 0:
-                    raise Exception("No channels found in response")
-                
-                # Get first channel
-                channel = channels[0]
-                
-                # Get alternatives
-                alternatives = channel.alternatives if hasattr(channel, 'alternatives') else []
-                
-                if not alternatives or len(alternatives) == 0:
-                    raise Exception("No alternatives found in channel")
-                
-                # Get first alternative
-                alt = alternatives[0]
-                
-                # Extract transcript
-                transcript = alt.transcript if hasattr(alt, 'transcript') else ""
-                
-                # Get detected language from metadata or channel
-                detected_language = "unknown"
-                if hasattr(response, 'metadata') and hasattr(response.metadata, 'model_info'):
-                    # Try to get from model info
-                    detected_language = getattr(channel, 'detected_language', "unknown")
-                elif hasattr(channel, 'detected_language'):
-                    detected_language = channel.detected_language
-                
-                # Get confidence
-                confidence = alt.confidence if hasattr(alt, 'confidence') else None
-                
-                # Get paragraphs if available (convert to dict for JSON serialization)
-                paragraphs = []
-                if hasattr(alt, 'paragraphs') and alt.paragraphs:
-                    if hasattr(alt.paragraphs, 'paragraphs'):
-                        para_list = alt.paragraphs.paragraphs
-                    elif isinstance(alt.paragraphs, list):
-                        para_list = alt.paragraphs
-                    else:
-                        para_list = []
-                    
-                    # Convert paragraph objects to dicts
-                    for para in para_list:
-                        if hasattr(para, 'to_dict'):
-                            paragraphs.append(para.to_dict())
-                        elif hasattr(para, '__dict__'):
-                            paragraphs.append(para.__dict__)
-                        elif isinstance(para, dict):
-                            paragraphs.append(para)
-                        else:
-                            paragraphs.append({"text": str(para)})
-                
-                result = {
-                    "transcript": transcript,
-                    "detected_language": detected_language,
-                    "paragraphs": paragraphs,
-                    "confidence": confidence,
-                    "service": "deepgram"
-                }
-                
-                print(f"✅ Transcription complete! Detected language: {detected_language}")
-                if transcript:
-                    print(f"📝 Transcript length: {len(transcript)} characters")
-                else:
-                    print("⚠️  Warning: Transcript is empty")
-                
-                return result
-            
-            # Run async transcription
-            return asyncio.run(transcribe())
-            
-    except ImportError:
-        print("⚠️  Deepgram SDK not installed. Install with: pip install deepgram-sdk")
-        return None
-    except Exception as e:
-        print(f"❌ Deepgram transcription failed: {str(e)}")
-        import traceback
-        traceback.print_exc()
-        return None
+
 
 
 def transcribe_with_google(audio_path, api_key=None):
@@ -602,10 +468,9 @@ def main():
         print("Usage: python transcribe_audio.py <audio_file> [service] [--api-key KEY]")
         print("\nServices:")
         print("  1. gemini   - Best for multilingual (Kannada/Hindi/English) (requires GEMINI_API_KEY)")
-        print("  2. deepgram - Good for Hindi/mixed (requires DEEPGRAM_API_KEY)")
-        print("\nIf no service specified, will try Gemini first, then Deepgram.")
+        print("\nIf no service specified, will try Gemini first.")
         print("\nYou can pass API key via:")
-        print("  - Environment variable: export GEMINI_API_KEY='your-key' or export DEEPGRAM_API_KEY='your-key'")
+        print("  - Environment variable: export GEMINI_API_KEY='your-key'")
         print("  - Command line: --api-key your-key")
         sys.exit(1)
     
@@ -639,8 +504,7 @@ def main():
     if preferred_service:
         services_to_try = [preferred_service.lower()]
     else:
-        # Try in order: Gemini -> Deepgram
-        services_to_try = ["gemini", "deepgram"]
+        services_to_try = ["gemini"]
     
     transcript_result = None
     
@@ -651,8 +515,7 @@ def main():
         
         if service == "gemini":
             transcript_result = transcribe_with_gemini(audio_path, api_key=api_key)
-        elif service == "deepgram":
-            transcript_result = transcribe_with_deepgram(audio_path, api_key=api_key)
+        
         else:
             print(f"⚠️  Unknown service: {service}")
             continue
@@ -681,9 +544,6 @@ def main():
         print("  1. Gemini: Set GEMINI_API_KEY environment variable")
         print("     Get key from: https://aistudio.google.com/app/apikey")
         print("     Or pass via: --api-key YOUR_GEMINI_KEY")
-        print("  2. Deepgram: Set DEEPGRAM_API_KEY environment variable")
-        print("     Get key from: https://console.deepgram.com/")
-        print("     Or pass via: --api-key YOUR_DEEPGRAM_KEY")
         sys.exit(1)
 
 

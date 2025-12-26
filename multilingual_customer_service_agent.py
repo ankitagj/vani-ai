@@ -1,11 +1,11 @@
 # Install required packages:
-# pip install transformers torch sentence-transformers langdetect googletrans flask
+
 
 import json
 import torch
 from transformers import pipeline, AutoTokenizer, AutoModelForSequenceClassification, AutoModelForCausalLM
 from langdetect import detect, DetectorFactory
-from googletrans import Translator
+
 import logging
 import numpy as np
 from sentence_transformers import SentenceTransformer
@@ -27,8 +27,7 @@ class MultilingualCustomerServiceAgent:
         logging.basicConfig(level=logging.INFO)
         self.logger = logging.getLogger(__name__)
         
-        # Initialize translator
-        self.translator = Translator()
+        
         
         # Load training data for context
         self.training_data = self._load_training_data(training_data_path)

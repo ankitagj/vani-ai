@@ -229,6 +229,66 @@ def create_sample_training_data():
                 "conversation_id": "sample_015",
                 "timestamp": datetime.now().isoformat()
             }
+        },
+        
+        # Additional Location Examples
+        {
+            "question": "Give me your address",
+            "answer": "We are located on MG Road, near the metro station.",
+            "intent": "location",
+            "question_language": "english",
+            "answer_language": "english",
+            "primary_language": "english",
+            "intent_confidence": 1,
+            "context": {
+                "conversation_id": "sample_016",
+                "timestamp": datetime.now().isoformat()
+            }
+        },
+        
+        # Additional Pricing Examples
+        {
+            "question": "Kitna kharcha aayega?",
+            "answer": "Our prices are very reasonable. Main dishes start from 150 rupees.",
+            "intent": "pricing",
+            "question_language": "hindi",
+            "answer_language": "hindi",
+            "primary_language": "hindi",
+            "intent_confidence": 1,
+            "context": {
+                "conversation_id": "sample_017",
+                "timestamp": datetime.now().isoformat()
+            }
+        },
+        
+        # Additional Services Examples
+        {
+            "question": "Catering karte ho?",
+            "answer": "Yes, we provide catering services for parties.",
+            "intent": "services",
+            "question_language": "hindi",
+            "answer_language": "english",
+            "primary_language": "mixed",
+            "intent_confidence": 1,
+            "context": {
+                "conversation_id": "sample_018",
+                "timestamp": datetime.now().isoformat()
+            }
+        },
+        
+        # Additional Contact Examples
+        {
+            "question": "How can I contact you?",
+            "answer": "You can reach us at 080-12345678 or email us.",
+            "intent": "contact",
+            "question_language": "english",
+            "answer_language": "english",
+            "primary_language": "english",
+            "intent_confidence": 1,
+            "context": {
+                "conversation_id": "sample_019",
+                "timestamp": datetime.now().isoformat()
+            }
         }
     ]
     
