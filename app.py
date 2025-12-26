@@ -6,6 +6,7 @@ import logging
 import requests
 import os
 from dotenv import load_dotenv
+from leads_db import get_db
 
 # Load environment variables
 load_dotenv()
@@ -99,11 +100,20 @@ def text_to_speech():
     try:
         data = request.json
         text = data.get('text', '')
+        language = data.get('language', 'English')  # Get language from request
+        
         if not text:
             return jsonify({"error": "No text provided"}), 400
             
         # Voice ID provided by user
         VOICE_ID = "g6xIsTj2HwM6VR4iXFCw"
+        
+        # Map language to language code for better pronunciation (Hindi and English only)
+        language_code_map = {
+            'Hindi': 'hi',
+            'English': 'en'
+        }
+        language_code = language_code_map.get(language, 'en')  # Default to English
         
         # Call ElevenLabs TTS API
         response = requests.post(
@@ -115,6 +125,7 @@ def text_to_speech():
             json={
                 "text": text,
                 "model_id": "eleven_multilingual_v2",
+                "language_code": language_code,  # Add language code
                 "voice_settings": {
                     "stability": 0.5,
                     "similarity_boost": 0.75
@@ -137,6 +148,117 @@ def text_to_speech():
 @app.route('/health', methods=['GET'])
 def health_check():
     return jsonify({"status": "healthy", "agent_status": "ready" if agent else "failed"})
+
+@app.route('/save-conversation', methods=['POST'])
+def save_conversation():
+    """Save conversation and extract lead information"""
+    try:
+        data = request.json
+        session_id = data.get('session_id')
+        messages = data.get('messages', [])
+        language = data.get('language', 'English')
+        
+        if not session_id or not messages:
+            return jsonify({"error": "session_id and messages required"}), 400
+        
+        db = get_db()
+        
+        # Check if conversation exists, create if not
+        existing = db.get_conversation(session_id)
+        if not existing:
+            db.create_conversation(session_id, language)
+        
+        # Extract lead info using Gemini
+        lead_info = agent.extract_lead_info(messages)
+        
+        # Update conversation with messages and extracted info
+        db.update_conversation(
+            session_id=session_id,
+            messages=messages,
+            customer_name=lead_info.get('customer_name'),
+            customer_phone=lead_info.get('customer_phone'),
+            summary=lead_info.get('summary'),
+            ended=data.get('ended', False)
+        )
+        
+        logger.info(f"Saved conversation {session_id}: {lead_info}")
+        
+        return jsonify({
+            "success": True,
+            "lead_info": lead_info
+        })
+        
+    except Exception as e:
+        logger.error(f"Error saving conversation: {e}")
+        return jsonify({"error": str(e)}), 500
+
+@app.route('/dashboard')
+def dashboard():
+    """Simple dashboard to view captured leads"""
+    try:
+        db = get_db()
+        leads = db.get_leads(limit=50)
+        
+        # Convert to HTML table
+        html = """
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Rainbow Driving School - Leads Dashboard</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 20px; background: #f5f5f5; }
+        h1 { color: #333; }
+        table { width: 100%; border-collapse: collapse; background: white; box-shadow: 0 2px 4px rgba(0,0,0,0.1); }
+        th { background: #4CAF50; color: white; padding: 12px; text-align: left; }
+        td { padding: 10px; border-bottom: 1px solid #ddd; }
+        tr:hover { background: #f9f9f9; }
+        .phone { font-weight: bold; color: #2196F3; }
+        .name { font-weight: bold; }
+        .summary { color: #666; font-size: 0.9em; }
+        .timestamp { color: #999; font-size: 0.85em; }
+    </style>
+</head>
+<body>
+    <h1>🌈 Rainbow Driving School - Customer Leads</h1>
+    <p>Total Leads: """ + str(len(leads)) + """</p>
+    <table>
+        <tr>
+            <th>Date/Time</th>
+            <th>Customer Name</th>
+            <th>Phone Number</th>
+            <th>Language</th>
+            <th>Summary</th>
+        </tr>
+"""
+        
+        for lead in leads:
+            name = lead.get('customer_name') or '<em>Not provided</em>'
+            phone = lead.get('customer_phone') or '<em>Not provided</em>'
+            summary = lead.get('summary') or '<em>No summary</em>'
+            timestamp = lead.get('created_at', '')
+            language = lead.get('language', 'Unknown')
+            
+            html += f"""
+        <tr>
+            <td class="timestamp">{timestamp}</td>
+            <td class="name">{name}</td>
+            <td class="phone">{phone}</td>
+            <td>{language}</td>
+            <td class="summary">{summary}</td>
+        </tr>
+"""
+        
+        html += """
+    </table>
+</body>
+</html>
+"""
+        
+        return html
+        
+    except Exception as e:
+        logger.error(f"Dashboard error: {e}")
+        return f"<h1>Error loading dashboard</h1><p>{str(e)}</p>", 500
 
 if __name__ == '__main__':
     print("Starting Flask server on port 5001...")

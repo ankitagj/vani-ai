@@ -35,7 +35,7 @@ function App() {
   return (
     <div className="App">
       <header className="App-header">
-        <h1>Customer Service Assistant</h1>
+        <h1>Rainbow Driving School</h1>
         {/* <div style={{ margin: '20px 0' }}>
           <label style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '10px' }}>
             <input

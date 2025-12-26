@@ -21,7 +21,15 @@ export const ElevenLabsInput: React.FC<VoiceInputProps> = ({ onTranscriptComplet
     const silenceTimerRef = useRef<any>(null);
     const isPlayingRef = useRef<boolean>(false);
     const lastPartialTextRef = useRef<string>('');
+    const sessionIdRef = useRef<string>('');
+    const conversationLanguageRef = useRef<string>('English');
     const SILENCE_TIMEOUT_MS = 1500; // 1.5 seconds of no new text = turn ended
+
+    // Generate session ID on mount
+    useEffect(() => {
+        sessionIdRef.current = `session_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
+        addDebug(`Session ID: ${sessionIdRef.current}`);
+    }, []);
 
     const scrollToBottom = () => {
         messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
@@ -103,6 +111,32 @@ export const ElevenLabsInput: React.FC<VoiceInputProps> = ({ onTranscriptComplet
         partialTextRef.current = partialTranscript;
     }, [partialTranscript]);
 
+    // Save conversation periodically (every 3 messages)
+    useEffect(() => {
+        if (messages.length > 0 && messages.length % 3 === 0) {
+            saveConversation(false);
+        }
+    }, [messages]);
+
+    const saveConversation = async (ended: boolean = false) => {
+        try {
+            await fetch('/save-conversation', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    session_id: sessionIdRef.current,
+                    messages: messages,
+                    language: conversationLanguageRef.current,
+                    ended: ended
+                }),
+            });
+            if (ended) {
+                addDebug('Conversation saved (ended)');
+            }
+        } catch (err: any) {
+            console.error('Error saving conversation:', err);
+        }
+    };
 
     const submitUserQuery = async (text: string) => {
         if (!text || !text.trim()) return;
@@ -116,12 +150,17 @@ export const ElevenLabsInput: React.FC<VoiceInputProps> = ({ onTranscriptComplet
         try {
             const response = await onTranscriptComplete(text); // Verify this returns { answer: ... }
             const textToSpeak = response.answer || response.response;
+            const detectedLanguage = response.query_language || 'English';
+
+            // Track conversation language
+            conversationLanguageRef.current = detectedLanguage;
 
             if (textToSpeak) {
                 // Add placeholder for assistant message
                 setMessages(prev => [...prev, { role: 'assistant', text: '' }]);
 
-                await playAudioResponse(textToSpeak);
+                // Pass language to TTS
+                await playAudioResponse(textToSpeak, detectedLanguage);
             } else {
                 addDebug('No answer text found');
             }
@@ -149,14 +188,14 @@ export const ElevenLabsInput: React.FC<VoiceInputProps> = ({ onTranscriptComplet
         return interval;
     };
 
-    const playAudioResponse = async (text: string) => {
+    const playAudioResponse = async (text: string, language: string = 'English') => {
         try {
             isPlayingRef.current = true;
-            addDebug('Fetching audio...');
+            addDebug(`Fetching audio (${language})...`);
             const response = await fetch('/tts', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ text }),
+                body: JSON.stringify({ text, language }),
             });
 
             if (!response.ok) throw new Error('TTS failed');

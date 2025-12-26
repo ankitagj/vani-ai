@@ -103,16 +103,14 @@ class TranscriptQueryAgent:
         return "\n".join(context_parts)
     
     def _detect_query_language(self, query: str) -> str:
-        """Detect the language of the query"""
-        # Simple heuristic: check for non-ASCII characters
-        has_devanagari = any('\u0900' <= c <= '\u097F' for c in query)  # Hindi
-        has_kannada = any('\u0C80' <= c <= '\u0CFF' for c in query)      # Kannada
+        """Detect the language of the query - only Hindi or English"""
+        # Check for Devanagari script (Hindi)
+        has_devanagari = any('\u0900' <= c <= '\u097F' for c in query)
         
-        if has_kannada:
-            return "Kannada"
-        elif has_devanagari:
+        if has_devanagari:
             return "Hindi"
         else:
+            # Default to English for everything else (including Kannada, Urdu, etc.)
             return "English"
     
     def _initialize_model(self):
@@ -158,24 +156,36 @@ class TranscriptQueryAgent:
         # Get transcript context
         context = self._get_transcript_context()
         
-        # Create prompt
-        prompt = f"""You are the business owner responding to customer inquiries. Answer naturally and conversationally, as if you are the business owner speaking directly to the customer.
+        # Create prompt with strong language matching instruction (Hindi or English only)
+        language_instruction = {
+            "Hindi": "हिंदी में जवाब दें (Respond in Hindi)",
+            "English": "Respond in English"
+        }.get(language, "Respond in English")
+        
+        prompt = f"""You are SavitaDevi, the owner of Rainbow Driving School, responding to customer inquiries. Answer naturally and conversationally.
 
 CONTEXT FROM PREVIOUS CALL RECORDINGS:
 {context}
 
 CUSTOMER QUERY ({language}): {query}
 
-INSTRUCTIONS:
-1. Answer as the business owner would - naturally, helpfully, and directly.
-2. If the query is in {language}, respond in {language} (unless the user asks in English).
+CRITICAL INSTRUCTIONS:
+1. **LANGUAGE**: The customer asked in {language}. You MUST respond in {language}. {language_instruction}.
+   - ONLY use Hindi or English. Do NOT respond in Urdu, Kannada, or any other language.
+   - If you detect the query might be in another language, respond in English.
+2. Answer as the business owner would - naturally, helpfully, and directly.
 3. Use ONLY the information from the call recordings above. Do NOT mention "according to recordings" or cite sources - just answer naturally.
 4. If the information is not available in the transcripts, politely say you don't have that information or suggest they call for details.
 5. For business queries (hours, location, pricing, services), provide clear, direct answers as a business owner would.
 6. Be conversational and friendly, like you're talking to a customer on the phone.
 7. If multiple recordings have the same information, use the most complete version.
+8. **IMPORTANT - LEAD CAPTURE**: After answering the customer's question, if they seem interested:
+   - If you don't know their name yet, politely ask: "May I know your name please?" (in the appropriate language)
+   - If you have their name but not their phone number, ask: "Can I have your phone number so I can follow up with you?" (in the appropriate language)
+   - Be natural and conversational - don't ask for both at once, ask one at a time
+   - Only ask if the conversation is going well and the customer seems interested
 
-Respond as the business owner:"""
+Respond as SavitaDevi in {language}:"""
         
         try:
             # Generate response
@@ -215,6 +225,89 @@ Respond as the business owner:"""
                     "answer": f"Error processing query: {error_msg[:200]}",
                     "error": str(e)
                 }
+    
+    def extract_lead_info(self, conversation_messages: List[Dict]) -> Dict:
+        """Extract customer name, phone number, and summary from conversation using Gemini"""
+        if not conversation_messages:
+            return {
+                "customer_name": None,
+                "customer_phone": None,
+                "summary": "No conversation data"
+            }
+        
+        # Initialize model if needed
+        model_name = self._initialize_model()
+        
+        # Format conversation for analysis
+        conversation_text = "\n".join([
+            f"{'Customer' if msg['role'] == 'user' else 'SavitaDevi'}: {msg['text']}"
+            for msg in conversation_messages
+        ])
+        
+        prompt = f"""Analyze this conversation between a customer and SavitaDevi (Rainbow Driving School owner) and extract the following information:
+
+CONVERSATION:
+{conversation_text}
+
+TASK:
+Extract the following information if mentioned in the conversation:
+1. Customer's name (first name and/or last name)
+2. Customer's phone number (any format)
+3. Brief summary of what the customer inquired about (1-2 sentences)
+
+IMPORTANT:
+- If information is NOT mentioned, return "Not provided"
+- For phone numbers, extract exactly as mentioned (don't add country codes if not given)
+- For names, handle both English and Hindi names
+- Summary should be in English regardless of conversation language
+
+Respond in this EXACT format:
+NAME: [customer name or "Not provided"]
+PHONE: [phone number or "Not provided"]
+SUMMARY: [brief summary of inquiry]"""
+
+        try:
+            response = self.client.models.generate_content(
+                model=model_name,
+                contents=[
+                    types.Content(
+                        parts=[
+                            types.Part(text=prompt)
+                        ]
+                    )
+                ]
+            )
+            
+            result_text = response.text.strip()
+            
+            # Parse the structured response
+            lines = result_text.split('\n')
+            extracted = {
+                "customer_name": None,
+                "customer_phone": None,
+                "summary": None
+            }
+            
+            for line in lines:
+                if line.startswith("NAME:"):
+                    name = line.replace("NAME:", "").strip()
+                    extracted["customer_name"] = name if name != "Not provided" else None
+                elif line.startswith("PHONE:"):
+                    phone = line.replace("PHONE:", "").strip()
+                    extracted["customer_phone"] = phone if phone != "Not provided" else None
+                elif line.startswith("SUMMARY:"):
+                    summary = line.replace("SUMMARY:", "").strip()
+                    extracted["summary"] = summary if summary != "Not provided" else None
+            
+            return extracted
+            
+        except Exception as e:
+            print(f"Error extracting lead info: {e}")
+            return {
+                "customer_name": None,
+                "customer_phone": None,
+                "summary": f"Error during extraction: {str(e)[:100]}"
+            }
     
     def interactive_mode(self):
         """Run in interactive mode for querying"""
