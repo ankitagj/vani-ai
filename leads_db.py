@@ -35,6 +35,7 @@ class LeadsDatabase:
                 language TEXT,
                 messages TEXT NOT NULL,
                 summary TEXT,
+                lead_classification TEXT,
                 created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
             )
         """)
@@ -60,6 +61,7 @@ class LeadsDatabase:
         customer_name: Optional[str] = None,
         customer_phone: Optional[str] = None,
         summary: Optional[str] = None,
+        lead_classification: Optional[str] = None,
         ended: bool = False
     ):
         """Update conversation with new messages and extracted info"""
@@ -79,6 +81,10 @@ class LeadsDatabase:
         if summary:
             updates.append("summary = ?")
             params.append(summary)
+        
+        if lead_classification:
+            updates.append("lead_classification = ?")
+            params.append(lead_classification)
         
         if ended:
             updates.append("ended_at = ?")

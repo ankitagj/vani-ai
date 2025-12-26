@@ -142,8 +142,14 @@ def text_to_speech():
         return Response(response.iter_content(chunk_size=1024), content_type='audio/mpeg')
         
     except Exception as e:
-        logger.error(f"TTS Error: {e}")
-        return jsonify({"error": str(e)}), 500
+        error_msg = str(e)
+        logger.error(f"TTS Error: {error_msg}")
+        
+        # Return graceful error response
+        if "quota" in error_msg.lower() or "429" in error_msg:
+            return jsonify({"error": "Voice service temporarily unavailable. Please try again shortly."}), 503
+        else:
+            return jsonify({"error": "Unable to generate voice response. Please try again."}), 500
 
 @app.route('/health', methods=['GET'])
 def health_check():
@@ -178,6 +184,7 @@ def save_conversation():
             customer_name=lead_info.get('customer_name'),
             customer_phone=lead_info.get('customer_phone'),
             summary=lead_info.get('summary'),
+            lead_classification=lead_info.get('lead_classification'),
             ended=data.get('ended', False)
         )
         
@@ -194,7 +201,7 @@ def save_conversation():
 
 @app.route('/dashboard')
 def dashboard():
-    """Simple dashboard to view captured leads"""
+    """Enhanced dashboard to view captured leads with classification"""
     try:
         db = get_db()
         leads = db.get_leads(limit=50)
@@ -204,52 +211,103 @@ def dashboard():
 <!DOCTYPE html>
 <html>
 <head>
-    <title>Rainbow Driving School - Leads Dashboard</title>
+    <title>Rainbow Driving School - Post-Call Analytics Dashboard</title>
     <style>
-        body { font-family: Arial, sans-serif; margin: 20px; background: #f5f5f5; }
-        h1 { color: #333; }
-        table { width: 100%; border-collapse: collapse; background: white; box-shadow: 0 2px 4px rgba(0,0,0,0.1); }
-        th { background: #4CAF50; color: white; padding: 12px; text-align: left; }
-        td { padding: 10px; border-bottom: 1px solid #ddd; }
-        tr:hover { background: #f9f9f9; }
-        .phone { font-weight: bold; color: #2196F3; }
-        .name { font-weight: bold; }
-        .summary { color: #666; font-size: 0.9em; }
-        .timestamp { color: #999; font-size: 0.85em; }
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; background: #f5f7fa; padding: 20px; }
+        .header { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; padding: 30px; border-radius: 12px; margin-bottom: 30px; box-shadow: 0 4px 6px rgba(0,0,0,0.1); }
+        h1 { font-size: 2em; margin-bottom: 10px; }
+        .stats { display: flex; gap: 20px; margin-top: 20px; }
+        .stat-card { background: rgba(255,255,255,0.2); padding: 15px 20px; border-radius: 8px; flex: 1; }
+        .stat-number { font-size: 2em; font-weight: bold; }
+        .stat-label { font-size: 0.9em; opacity: 0.9; margin-top: 5px; }
+        table { width: 100%; border-collapse: collapse; background: white; box-shadow: 0 2px 8px rgba(0,0,0,0.1); border-radius: 12px; overflow: hidden; }
+        th { background: #4a5568; color: white; padding: 16px; text-align: left; font-weight: 600; font-size: 0.9em; text-transform: uppercase; letter-spacing: 0.5px; }
+        td { padding: 16px; border-bottom: 1px solid #e2e8f0; }
+        tr:hover { background: #f7fafc; }
+        tr:last-child td { border-bottom: none; }
+        .badge { display: inline-block; padding: 4px 12px; border-radius: 12px; font-size: 0.75em; font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px; }
+        .badge-hot { background: #fed7d7; color: #c53030; }
+        .badge-inquiry { background: #bee3f8; color: #2c5282; }
+        .badge-spam { background: #fbd38d; color: #975a16; }
+        .badge-unrelated { background: #e2e8f0; color: #4a5568; }
+        .phone { font-weight: 600; color: #2b6cb0; }
+        .name { font-weight: 600; color: #2d3748; }
+        .summary { color: #4a5568; font-size: 0.9em; line-height: 1.5; max-width: 400px; }
+        .timestamp { color: #718096; font-size: 0.85em; }
+        .no-data { text-align: center; padding: 60px; color: #a0aec0; }
     </style>
 </head>
 <body>
-    <h1>🌈 Rainbow Driving School - Customer Leads</h1>
-    <p>Total Leads: """ + str(len(leads)) + """</p>
+    <div class="header">
+        <h1>🌈 Rainbow Driving School</h1>
+        <p style="font-size: 1.1em; opacity: 0.95;">Post-Call Analytics Dashboard</p>
+        <div class="stats">
+            <div class="stat-card">
+                <div class="stat-number">""" + str(len(leads)) + """</div>
+                <div class="stat-label">Total Conversations</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-number">""" + str(len([l for l in leads if l.get('lead_classification') == 'HOT_LEAD'])) + """</div>
+                <div class="stat-label">Hot Leads</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-number">""" + str(len([l for l in leads if l.get('lead_classification') == 'GENERAL_INQUIRY'])) + """</div>
+                <div class="stat-label">General Inquiries</div>
+            </div>
+        </div>
+    </div>
+"""
+        
+        if not leads:
+            html += '<div class="no-data">No conversations recorded yet. Start chatting with SavitaDevi to see leads here!</div>'
+        else:
+            html += """
     <table>
         <tr>
             <th>Date/Time</th>
+            <th>Classification</th>
             <th>Customer Name</th>
             <th>Phone Number</th>
             <th>Language</th>
-            <th>Summary</th>
+            <th>Conversation Summary</th>
         </tr>
 """
-        
-        for lead in leads:
-            name = lead.get('customer_name') or '<em>Not provided</em>'
-            phone = lead.get('customer_phone') or '<em>Not provided</em>'
-            summary = lead.get('summary') or '<em>No summary</em>'
-            timestamp = lead.get('created_at', '')
-            language = lead.get('language', 'Unknown')
             
-            html += f"""
+            for lead in leads:
+                name = lead.get('customer_name') or '<em style="color: #a0aec0;">Not provided</em>'
+                phone = lead.get('customer_phone') or '<em style="color: #a0aec0;">Not provided</em>'
+                summary = lead.get('summary') or '<em style="color: #a0aec0;">No summary available</em>'
+                timestamp = lead.get('created_at', '')
+                language = lead.get('language', 'Unknown')
+                classification = lead.get('lead_classification', 'UNRELATED')
+                
+                # Badge styling based on classification
+                badge_class = {
+                    'HOT_LEAD': 'badge-hot',
+                    'GENERAL_INQUIRY': 'badge-inquiry',
+                    'SPAM': 'badge-spam',
+                    'UNRELATED': 'badge-unrelated'
+                }.get(classification, 'badge-unrelated')
+                
+                badge_text = classification.replace('_', ' ')
+                
+                html += f"""
         <tr>
             <td class="timestamp">{timestamp}</td>
+            <td><span class="badge {badge_class}">{badge_text}</span></td>
             <td class="name">{name}</td>
             <td class="phone">{phone}</td>
             <td>{language}</td>
             <td class="summary">{summary}</td>
         </tr>
 """
+            
+            html += """
+    </table>
+"""
         
         html += """
-    </table>
 </body>
 </html>
 """

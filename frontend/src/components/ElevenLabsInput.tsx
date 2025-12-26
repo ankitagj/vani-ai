@@ -166,6 +166,13 @@ export const ElevenLabsInput: React.FC<VoiceInputProps> = ({ onTranscriptComplet
             }
         } catch (e: any) {
             addDebug(`Error submitting: ${e.message}`);
+
+            // Add error message as assistant response for user visibility
+            setMessages(prev => [...prev, {
+                role: 'assistant',
+                text: 'I apologize, I\'m experiencing technical difficulties. Please try again in a moment or call us directly for assistance.'
+            }]);
+
             setError(e.message);
         }
     };

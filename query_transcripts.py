@@ -158,7 +158,7 @@ class TranscriptQueryAgent:
         
         # Create prompt with strong language matching instruction (Hindi or English only)
         language_instruction = {
-            "Hindi": "हिंदी में जवाब दें (Respond in Hindi)",
+            "Hindi": "हिंदी में बात करें (Respond in Hindi - keep it casual and friendly)",
             "English": "Respond in English"
         }.get(language, "Respond in English")
         
@@ -179,11 +179,11 @@ CRITICAL INSTRUCTIONS:
 5. For business queries (hours, location, pricing, services), provide clear, direct answers as a business owner would.
 6. Be conversational and friendly, like you're talking to a customer on the phone.
 7. If multiple recordings have the same information, use the most complete version.
-8. **IMPORTANT - LEAD CAPTURE**: After answering the customer's question, if they seem interested:
-   - If you don't know their name yet, politely ask: "May I know your name please?" (in the appropriate language)
-   - If you have their name but not their phone number, ask: "Can I have your phone number so I can follow up with you?" (in the appropriate language)
-   - Be natural and conversational - don't ask for both at once, ask one at a time
-   - Only ask if the conversation is going well and the customer seems interested
+8. **IMPORTANT - LEAD CAPTURE**: 
+   - ONLY ask for contact info if the customer seems genuinely interested AND you haven't asked before in this conversation
+   - If asking, request BOTH name and phone number together in ONE question: "May I have your name and phone number so I can follow up with you?" (in appropriate language)
+   - NEVER ask multiple times - if you already asked or they already provided it, DO NOT ask again
+   - Be natural - only ask if the conversation is going well
 
 Respond as SavitaDevi in {language}:"""
         
@@ -213,17 +213,21 @@ Respond as SavitaDevi in {language}:"""
             
         except Exception as e:
             error_msg = str(e)
-            if "429" in error_msg or "RESOURCE_EXHAUSTED" in error_msg:
+            logger.error(f"Error in answer_query: {error_msg}")
+            
+            if "429" in error_msg or "RESOURCE_EXHAUSTED" in error_msg or "quota" in error_msg.lower():
                 return {
                     "query": query,
-                    "answer": "Sorry, API quota exceeded. Please try again later.",
+                    "query_language": language,
+                    "answer": "I apologize, but I'm experiencing high demand right now. Please try again in a few moments or call us directly for immediate assistance." if language == "English" else "अरे, अभी थोड़ी व्यस्तता है। थोड़ी देर बाद फिर से कोशिश करें या हमें सीधे फोन कर लें।",
                     "error": "quota_exceeded"
                 }
             else:
                 return {
                     "query": query,
-                    "answer": f"Error processing query: {error_msg[:200]}",
-                    "error": str(e)
+                    "query_language": language,
+                    "answer": "I apologize, I'm having technical difficulties. Please try again or call us for assistance." if language == "English" else "सॉरी, थोड़ी तकनीकी दिक्कत आ रही है। फिर से कोशिश करें या हमें कॉल करें।",
+                    "error": "processing_error"
                 }
     
     def extract_lead_info(self, conversation_messages: List[Dict]) -> Dict:
@@ -250,21 +254,30 @@ CONVERSATION:
 {conversation_text}
 
 TASK:
-Extract the following information if mentioned in the conversation:
+Extract the following information:
 1. Customer's name (first name and/or last name)
 2. Customer's phone number (any format)
-3. Brief summary of what the customer inquired about (1-2 sentences)
+3. Brief summary of what the customer inquired about (2-3 sentences)
+4. Lead classification based on conversation quality and intent
+
+LEAD CLASSIFICATION CRITERIA:
+- **HOT_LEAD**: Customer is actively interested, asked about pricing/enrollment/schedule, provided contact info, or wants to sign up
+- **GENERAL_INQUIRY**: Customer asked legitimate questions about services, location, hours, but hasn't committed yet
+- **SPAM**: Irrelevant conversation, testing the system, nonsensical queries, or promotional content
+- **UNRELATED**: Conversation is not about driving school services at all
 
 IMPORTANT:
 - If information is NOT mentioned, return "Not provided"
 - For phone numbers, extract exactly as mentioned (don't add country codes if not given)
 - For names, handle both English and Hindi names
 - Summary should be in English regardless of conversation language
+- Choose ONE classification that best fits the conversation
 
 Respond in this EXACT format:
 NAME: [customer name or "Not provided"]
 PHONE: [phone number or "Not provided"]
-SUMMARY: [brief summary of inquiry]"""
+SUMMARY: [brief summary of inquiry]
+CLASSIFICATION: [HOT_LEAD or GENERAL_INQUIRY or SPAM or UNRELATED]"""
 
         try:
             response = self.client.models.generate_content(
@@ -285,7 +298,8 @@ SUMMARY: [brief summary of inquiry]"""
             extracted = {
                 "customer_name": None,
                 "customer_phone": None,
-                "summary": None
+                "summary": None,
+                "lead_classification": None
             }
             
             for line in lines:
@@ -298,15 +312,22 @@ SUMMARY: [brief summary of inquiry]"""
                 elif line.startswith("SUMMARY:"):
                     summary = line.replace("SUMMARY:", "").strip()
                     extracted["summary"] = summary if summary != "Not provided" else None
+                elif line.startswith("CLASSIFICATION:"):
+                    classification = line.replace("CLASSIFICATION:", "").strip()
+                    extracted["lead_classification"] = classification
             
             return extracted
             
         except Exception as e:
-            print(f"Error extracting lead info: {e}")
+            error_msg = str(e)
+            logger.error(f"Error extracting lead info: {error_msg}")
+            
+            # Return partial data on error instead of failing completely
             return {
                 "customer_name": None,
                 "customer_phone": None,
-                "summary": f"Error during extraction: {str(e)[:100]}"
+                "summary": "Error during analysis - conversation data preserved",
+                "lead_classification": "UNRELATED"
             }
     
     def interactive_mode(self):
