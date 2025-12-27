@@ -6,7 +6,7 @@ function App() {
   // const [useElevenLabs, setUseElevenLabs] = useState(false);
 
   // This function will be called when a final transcript is ready
-  const handleTranscriptComplete = async (transcript: string) => {
+  const handleTranscriptComplete = async (transcript: string, messages: any[] = []) => {
     console.log('Final Transcript:', transcript);
 
     // Perform the fetch() POST request to the backend
@@ -16,7 +16,7 @@ function App() {
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify({ transcript }),
+        body: JSON.stringify({ transcript, messages }),
       });
 
       if (!response.ok) {

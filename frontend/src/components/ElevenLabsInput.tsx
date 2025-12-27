@@ -2,7 +2,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import { useScribe } from '@elevenlabs/react';
 
 interface VoiceInputProps {
-    onTranscriptComplete: (transcript: string) => Promise<any>;
+    onTranscriptComplete: (transcript: string, messages?: Message[]) => Promise<any>;
 }
 
 interface Message {
@@ -138,6 +138,49 @@ export const ElevenLabsInput: React.FC<VoiceInputProps> = ({ onTranscriptComplet
         }
     };
 
+    // Filler audio management
+    const fillerAudioRef = useRef<HTMLAudioElement | null>(null);
+    const FILLERS: { [key: string]: string[] } = {
+        'English': [
+            '/fillers/filler_1.mp3',
+            '/fillers/filler_2.mp3',
+            '/fillers/filler_3.mp3',
+            '/fillers/filler_4.mp3'
+        ],
+        'Hindi': [
+            '/fillers/filler_hi_1.mp3',
+            '/fillers/filler_hi_2.mp3',
+            '/fillers/filler_hi_3.mp3'
+        ]
+    };
+
+    const playFiller = async () => {
+        try {
+            // Determine language (default to English if unknown)
+            const lang = conversationLanguageRef.current || 'English';
+            const fillersList = FILLERS[lang] || FILLERS['English'];
+
+            // Pick random filler
+            const randomFiller = fillersList[Math.floor(Math.random() * fillersList.length)];
+            addDebug(`Playing filler (${lang}): ${randomFiller}`);
+
+            const audio = new Audio(randomFiller);
+            audio.volume = 0.6; // Slightly lower volume
+            fillerAudioRef.current = audio;
+
+            await audio.play();
+        } catch (e: any) {
+            console.warn("Filler play failed", e);
+        }
+    };
+
+    const stopFiller = () => {
+        if (fillerAudioRef.current) {
+            fillerAudioRef.current.pause();
+            fillerAudioRef.current = null;
+        }
+    };
+
     const submitUserQuery = async (text: string) => {
         if (!text || !text.trim()) return;
 
@@ -145,10 +188,20 @@ export const ElevenLabsInput: React.FC<VoiceInputProps> = ({ onTranscriptComplet
         // Add user message
         setMessages(prev => [...prev, { role: 'user', text }]);
 
+        // Play filler immediately to mask latency
+        playFiller();
+
         addDebug(`Submitting user query: ${text}...`);
 
         try {
-            const response = await onTranscriptComplete(text); // Verify this returns { answer: ... }
+            const response = await onTranscriptComplete(text, messages); // Pass history so backend knows context
+
+            // Stop filler once we have the response (or ideally when TTS starts, but this is close enough)
+            // actually playAudioResponse will be called next. 
+            // We should ideally let playAudioResponse stop it to avoid dead air if TTS fetch takes time.
+            // But response generation is the long part. TTS generation is fast.
+            // So we can stop here or inside playAudioResponse.
+
             const textToSpeak = response.answer || response.response;
             const detectedLanguage = response.query_language || 'English';
 
@@ -162,9 +215,11 @@ export const ElevenLabsInput: React.FC<VoiceInputProps> = ({ onTranscriptComplet
                 // Pass language to TTS
                 await playAudioResponse(textToSpeak, detectedLanguage);
             } else {
+                stopFiller(); // Stop if no response
                 addDebug('No answer text found');
             }
         } catch (e: any) {
+            stopFiller(); // Stop on error
             addDebug(`Error submitting: ${e.message}`);
 
             // Add error message as assistant response for user visibility
@@ -199,6 +254,9 @@ export const ElevenLabsInput: React.FC<VoiceInputProps> = ({ onTranscriptComplet
         try {
             isPlayingRef.current = true;
             addDebug(`Fetching audio (${language})...`);
+
+            // Note: We leave filler playing while fetching TTS to cover that gap too
+
             const response = await fetch('/tts', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
@@ -210,6 +268,9 @@ export const ElevenLabsInput: React.FC<VoiceInputProps> = ({ onTranscriptComplet
             const blob = await response.blob();
             const url = URL.createObjectURL(blob);
             const audio = new Audio(url);
+
+            // STOP FILLER NOW - ready to play real audio
+            stopFiller();
 
             // Sync: Start typewriter when audio starts
             let typeWriterInterval: any;
@@ -231,6 +292,7 @@ export const ElevenLabsInput: React.FC<VoiceInputProps> = ({ onTranscriptComplet
 
             await audio.play();
         } catch (err: any) {
+            stopFiller(); // Stop if TTS fails
             isPlayingRef.current = false;
             addDebug(`Playback error: ${err.message}`);
             // Start listening anyway if audio fails, to keep flow

@@ -52,16 +52,17 @@ def handle_query():
     
     try:
         data = request.json
-        # Frontend sends { "transcript": "..." }
+        # Frontend sends { "transcript": "...", "messages": [...] }
         query = data.get('transcript', '')
+        messages = data.get('messages', [])
         
         if not query:
             return jsonify({"error": "No query provided"}), 400
         
         logger.info(f"Received query: {query}")
         
-        # Use Gemini agent to answer
-        result = agent.answer_query(query)
+        # Use Gemini agent to answer, passing history
+        result = agent.answer_query(query, conversation_history=messages)
         
         # Add 'response' key for compatibility if anything expects it, though frontend just dumps JSON
         if 'answer' in result:
@@ -157,7 +158,7 @@ def health_check():
 
 @app.route('/save-conversation', methods=['POST'])
 def save_conversation():
-    """Save conversation and extract lead information"""
+    """Save conversation and extract lead information asynchronously"""
     try:
         data = request.json
         session_id = data.get('session_id')
@@ -174,25 +175,44 @@ def save_conversation():
         if not existing:
             db.create_conversation(session_id, language)
         
-        # Extract lead info using Gemini
-        lead_info = agent.extract_lead_info(messages)
-        
-        # Update conversation with messages and extracted info
+        # Save messages immediately (without lead extraction)
         db.update_conversation(
             session_id=session_id,
             messages=messages,
-            customer_name=lead_info.get('customer_name'),
-            customer_phone=lead_info.get('customer_phone'),
-            summary=lead_info.get('summary'),
-            lead_classification=lead_info.get('lead_classification'),
             ended=data.get('ended', False)
         )
         
-        logger.info(f"Saved conversation {session_id}: {lead_info}")
+        # Extract lead info in background thread (non-blocking)
+        def extract_and_update_lead():
+            try:
+                lead_info = agent.extract_lead_info(messages)
+                
+                # Update conversation with extracted info
+                db.update_conversation(
+                    session_id=session_id,
+                    messages=messages,
+                    customer_name=lead_info.get('customer_name'),
+                    customer_phone=lead_info.get('customer_phone'),
+                    summary=lead_info.get('summary'),
+                    lead_classification=lead_info.get('lead_classification'),
+                    ended=data.get('ended', False)
+                )
+                
+                logger.info(f"Lead extraction complete for {session_id}: {lead_info}")
+            except Exception as e:
+                logger.error(f"Background lead extraction failed for {session_id}: {e}")
+        
+        # Start background thread for lead extraction
+        import threading
+        thread = threading.Thread(target=extract_and_update_lead, daemon=True)
+        thread.start()
+        
+        # Return immediately without waiting for lead extraction
+        logger.info(f"Conversation saved (lead extraction in progress): {session_id}")
         
         return jsonify({
             "success": True,
-            "lead_info": lead_info
+            "message": "Conversation saved, lead extraction in progress"
         })
         
     except Exception as e:
@@ -204,7 +224,7 @@ def dashboard():
     """Enhanced dashboard to view captured leads with classification"""
     try:
         db = get_db()
-        leads = db.get_leads(limit=50)
+        leads = db.get_all_conversations(limit=50)
         
         # Convert to HTML table
         html = """

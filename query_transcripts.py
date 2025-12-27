@@ -43,7 +43,8 @@ class TranscriptQueryAgent:
         print(f"📚 Loaded {len(self.transcripts)} transcript files")
         
         # Try different models in order
-        self.models_to_try = ["gemini-1.5-pro", "gemini-1.5-flash", "gemini-2.0-flash-exp"]
+        # Try different models in order - prioritize the one that works (gemini-2.0-flash-exp)
+        self.models_to_try = ["gemini-2.0-flash-exp", "gemini-1.5-flash", "gemini-1.5-pro", "gemini-1.5-flash-8b", "gemini-1.0-pro"]
         self.model_name = None
     
     def _load_transcripts(self) -> List[Dict]:
@@ -118,6 +119,7 @@ class TranscriptQueryAgent:
         if self.model_name:
             return self.model_name
         
+        # Try gemini-1.5-flash first (better quota: 15 RPM vs 10 RPM)
         for model_name in self.models_to_try:
             try:
                 # Test with a simple query
@@ -137,8 +139,14 @@ class TranscriptQueryAgent:
         
         raise Exception("No working Gemini model found. Please check your API key and quota.")
     
-    def answer_query(self, query: str, language: Optional[str] = None) -> Dict:
-        """Answer a query using the transcript knowledge base"""
+    def answer_query(self, query: str, language: Optional[str] = None, conversation_history: List[Dict] = None) -> Dict:
+        """Answer a query using the transcript knowledge base
+        
+        Args:
+            query: The user's question
+            language: Optional language override (Hindi/English)
+            conversation_history: List of previous messages [{"role": "user/assistant", "text": "..."}]
+        """
         if not self.transcripts:
             return {
                 "query": query,
@@ -146,23 +154,69 @@ class TranscriptQueryAgent:
                 "error": "No transcripts loaded"
             }
         
-        # Detect language if not provided
-        if not language:
-            language = self._detect_query_language(query)
-        
-        # Initialize model
-        model_name = self._initialize_model()
-        
-        # Get transcript context
-        context = self._get_transcript_context()
-        
-        # Create prompt with strong language matching instruction (Hindi or English only)
-        language_instruction = {
-            "Hindi": "हिंदी में बात करें (Respond in Hindi - keep it casual and friendly)",
-            "English": "Respond in English"
-        }.get(language, "Respond in English")
-        
-        prompt = f"""You are SavitaDevi, the owner of Rainbow Driving School, responding to customer inquiries. Answer naturally and conversationally.
+        # Move initialization inside try block to catch setup errors
+        try:
+            # Detect language if not provided
+            if not language:
+                language = self._detect_query_language(query)
+            
+            # Initialize model (if not already cached)
+            model_name = self._initialize_model()
+            
+            # Get transcript context
+            context = self._get_transcript_context()
+            
+            # Create prompt with strong language matching instruction (Hindi or English only)
+            language_instruction = {
+                "Hindi": "हिंदी में बात करें (Respond in Hindi - keep it casual and friendly)",
+                "English": "Respond in English"
+            }.get(language, "Respond in English")
+            
+            # Analyze conversation history for lead capture logic
+            conversation_history = conversation_history or []
+            
+            # Count user turns (excluding current query which isn't in history yet)
+            user_turns = sum(1 for msg in conversation_history if msg.get('role') == 'user')
+            current_turn = user_turns + 1
+            
+            # Check if we already asked for contact info
+            asked_for_contact = any(
+                "name" in msg.get('text', '').lower() and "phone" in msg.get('text', '').lower() 
+                for msg in conversation_history 
+                if msg.get('role') == 'assistant'
+            )
+            
+            # Check if user provided contact info (simple heuristic)
+            # Look for numbers with 10 digits
+            import re
+            provided_contact = any(
+                re.search(r'\d{10}', msg.get('text', '')) or re.search(r'\d{3}[-\s]\d{3}[-\s]\d{4}', msg.get('text', ''))
+                for msg in conversation_history
+                if msg.get('role') == 'user'
+            )
+            
+            # Determine lead capture instruction
+            lead_capture_instruction = ""
+            if not asked_for_contact and not provided_contact:
+                if current_turn <= 2:
+                    lead_capture_instruction = "IMPORTANT: You MUST ask for their name and phone number in this response. Say something like 'May I have your name and number so I can better assist you?'"
+                else:
+                    # If late in conversation, don't force it unless really relevant, but user said "ensure within 1st 2 questions"
+                    # So we interpret as: if missed, don't annoy them? Or catch up? 
+                    # Let's say: catch up if it's still early-ish (turn 3), otherwise drop it to be non-intrusive?
+                    # User said: "ensure this information is only asked once and captured within 1st 2 questions"
+                    # This implies STRICTLY in first 2. If we missed it (e.g. error), maybe ask? 
+                    # But safer to strict ask in turn 1 or 2.
+                    pass
+            elif asked_for_contact or provided_contact:
+                lead_capture_instruction = "DO NOT ask for name or phone number. We already have it or asked for it."
+
+            # Determine greeting instruction
+            greeting_instruction = "Greet the customer warmly."
+            if current_turn > 1:
+                greeting_instruction = "DO NOT greet the customer (no 'Hello', 'Hi', etc.). Go straight to the answer."
+            
+            prompt = f"""You are SavitaDevi, the owner of Rainbow Driving School, responding to customer inquiries. Answer naturally and conversationally.
 
 CONTEXT FROM PREVIOUS CALL RECORDINGS:
 {context}
@@ -179,37 +233,60 @@ CRITICAL INSTRUCTIONS:
 5. For business queries (hours, location, pricing, services), provide clear, direct answers as a business owner would.
 6. Be conversational and friendly, like you're talking to a customer on the phone.
 7. If multiple recordings have the same information, use the most complete version.
-8. **IMPORTANT - LEAD CAPTURE**: 
-   - ONLY ask for contact info if the customer seems genuinely interested AND you haven't asked before in this conversation
-   - If asking, request BOTH name and phone number together in ONE question: "May I have your name and phone number so I can follow up with you?" (in appropriate language)
-   - NEVER ask multiple times - if you already asked or they already provided it, DO NOT ask again
-   - Be natural - only ask if the conversation is going well
+8. **LEAD CAPTURE STRATEGY**: 
+   - We must capture name and phone number early (First 2 turns).
+   - {lead_capture_instruction}
+   - If asking, request BOTH together: "May I have your name and phone number?"
+   - NEVER ask if you already asked or if they gave it.
+9. **GREETING**: {greeting_instruction}
 
 Respond as SavitaDevi in {language}:"""
         
-        try:
-            # Generate response
-            response = self.client.models.generate_content(
-                model=model_name,
-                contents=[
-                    types.Content(
-                        parts=[
-                            types.Part(text=prompt)
+            # Generate response with retries
+            max_retries = 3
+            import time
+            import random
+            
+            last_error = None
+            
+            for attempt in range(max_retries):
+                try:
+                    response = self.client.models.generate_content(
+                        model=model_name,
+                        contents=[
+                            types.Content(
+                                parts=[
+                                    types.Part(text=prompt)
+                                ]
+                            )
                         ]
                     )
-                ]
-            )
+                    
+                    answer = response.text.strip()
+                    
+                    return {
+                        "query": query,
+                        "query_language": language,
+                        "answer": answer,
+                        "model": model_name,
+                        "timestamp": datetime.now().isoformat(),
+                        "transcripts_used": len(self.transcripts)
+                    }
+                    
+                except Exception as loop_e:
+                    last_error = loop_e
+                    error_str = str(loop_e)
+                    # Only retry on transient errors or rate limits
+                    if "429" in error_str or "503" in error_str or "500" in error_str or "quota" in error_str.lower():
+                        sleep_time = (attempt + 1) * 2 + random.uniform(0, 1)
+                        print(f"⚠️  Attempt {attempt+1} failed ({error_str}), retrying in {sleep_time:.1f}s...")
+                        time.sleep(sleep_time)
+                    else:
+                        raise loop_e
             
-            answer = response.text.strip()
-            
-            return {
-                "query": query,
-                "query_language": language,
-                "answer": answer,
-                "model": model_name,
-                "timestamp": datetime.now().isoformat(),
-                "transcripts_used": len(self.transcripts)
-            }
+            # If we exhausted retries, raise the last error
+            if last_error:
+                raise last_error
             
         except Exception as e:
             error_msg = str(e)
@@ -218,14 +295,14 @@ Respond as SavitaDevi in {language}:"""
             if "429" in error_msg or "RESOURCE_EXHAUSTED" in error_msg or "quota" in error_msg.lower():
                 return {
                     "query": query,
-                    "query_language": language,
+                    "query_language": language if 'language' in locals() else "English",
                     "answer": "I apologize, but I'm experiencing high demand right now. Please try again in a few moments or call us directly for immediate assistance." if language == "English" else "अरे, अभी थोड़ी व्यस्तता है। थोड़ी देर बाद फिर से कोशिश करें या हमें सीधे फोन कर लें।",
                     "error": "quota_exceeded"
                 }
             else:
                 return {
                     "query": query,
-                    "query_language": language,
+                    "query_language": language if 'language' in locals() else "English",
                     "answer": "I apologize, I'm having technical difficulties. Please try again or call us for assistance." if language == "English" else "सॉरी, थोड़ी तकनीकी दिक्कत आ रही है। फिर से कोशिश करें या हमें कॉल करें।",
                     "error": "processing_error"
                 }
