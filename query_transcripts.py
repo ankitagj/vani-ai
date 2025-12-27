@@ -42,6 +42,17 @@ class TranscriptQueryAgent:
         self.transcripts = self._load_transcripts()
         print(f"📚 Loaded {len(self.transcripts)} transcript files")
         
+        # Load Knowledge Base (if exists)
+        self.knowledge_base = None
+        kb_path = Path("knowledge_base.json")
+        if kb_path.exists():
+            try:
+                with open(kb_path, 'r') as f:
+                    self.knowledge_base = json.load(f)
+                print("🧠 Knowledge Base loaded successfully!")
+            except Exception as e:
+                print(f"⚠️ Failed to load Knowledge Base: {e}")
+        
         # Try different models in order
         # Try different models in order - prioritize the one that works (gemini-2.0-flash-exp)
         self.models_to_try = ["gemini-2.0-flash-exp", "gemini-1.5-flash", "gemini-1.5-pro", "gemini-1.5-flash-8b", "gemini-1.0-pro"]
@@ -75,7 +86,29 @@ class TranscriptQueryAgent:
         return transcripts
     
     def _get_transcript_context(self) -> str:
-        """Format all transcripts as context for Gemini"""
+        """Format context for Gemini from Knowledge Base or Transcripts"""
+        # PRIORITY 1: USE STRUCTURED KNOWLEDGE BASE
+        if self.knowledge_base:
+            kb = self.knowledge_base
+            context_parts = []
+            context_parts.append("=== KNOWLEDGE BASE (Deduced from Call Recordings) ===")
+            
+            # Business Info
+            biz = kb.get('business_info', {})
+            context_parts.append(f"BUSINESS: {biz.get('name', 'Rainbow Driving School')}")
+            if biz.get('location'): context_parts.append(f"LOCATION: {biz.get('location')}")
+            if biz.get('owner'): context_parts.append(f"OWNER: {biz.get('owner')}")
+            
+            # Q&A Pairs
+            context_parts.append("\n=== FREQUENT QUESTIONS & ANSWERS ===")
+            for item in kb.get('qa_pairs', []):
+                q = item.get('question')
+                a = item.get('answer')
+                context_parts.append(f"Q: {q}\nA: {a}\n")
+            
+            return "\n".join(context_parts)
+            
+        # PRIORITY 2: FALLBACK TO RAW TRANSCRIPTS
         if not self.transcripts:
             return "No transcripts available."
         
@@ -216,6 +249,14 @@ class TranscriptQueryAgent:
             if current_turn > 1:
                 greeting_instruction = "DO NOT greet the customer (no 'Hello', 'Hi', etc.). Go straight to the answer."
             
+            # Get business details for fallback
+            owner_name = "us"
+            owner_phone = "directly"
+            if self.knowledge_base:
+                biz = self.knowledge_base.get('business_info', {})
+                if biz.get('owner'): owner_name = biz.get('owner')
+                if biz.get('phone'): owner_phone = biz.get('phone')
+            
             prompt = f"""You are SavitaDevi, the owner of Rainbow Driving School, responding to customer inquiries. Answer naturally and conversationally.
 
 CONTEXT FROM PREVIOUS CALL RECORDINGS:
@@ -229,7 +270,7 @@ CRITICAL INSTRUCTIONS:
    - If you detect the query might be in another language, respond in English.
 2. Answer as the business owner would - naturally, helpfully, and directly.
 3. Use ONLY the information from the call recordings above. Do NOT mention "according to recordings" or cite sources - just answer naturally.
-4. If the information is not available in the transcripts, politely say you don't have that information or suggest they call for details.
+4. If the information is not available in the transcripts, politely say you don't have that information and suggest they call **{owner_name} at {owner_phone}** for details.
 5. For business queries (hours, location, pricing, services), provide clear, direct answers as a business owner would.
 6. Be conversational and friendly, like you're talking to a customer on the phone.
 7. If multiple recordings have the same information, use the most complete version.
