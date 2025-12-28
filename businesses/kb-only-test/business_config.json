@@ -1,0 +1,7 @@
+{
+    "business_name": "KB Only Test Business",
+    "business_type": "Retail",
+    "agent_name": "Assistant",
+    "greeting_message": "Hello! How can I help you?",
+    "onboarding_status": "complete"
+}

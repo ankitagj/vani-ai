@@ -1,0 +1,18 @@
+{
+    "business_name": "Rainbow Driving School",
+    "agent_name": "SavitaDevi",
+    "owner_name": "Savitha Jhawar",
+    "phone": "+91-9663925353",
+    "location": "Gulbarga/Kalaburagi",
+    "services": [
+        "Two-wheeler training",
+        "Scooty training"
+    ],
+    "language_support": [
+        "English",
+        "Hindi",
+        "Kannada"
+    ],
+    "greeting_message": "Namaste! I am SavitaDevi from Rainbow Driving School. How can I help you today?",
+    "onboarding_status": "complete"
+}

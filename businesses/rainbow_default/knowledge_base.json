@@ -1,0 +1,65 @@
+{
+  "business_info": {
+    "name": "Rainbow Driving School",
+    "owner": "Savitha Jhawar",
+    "phone": "+91-9663925353",
+    "address": "Near KB Kalyan Mantap, Karaneshwar Nagar, Gulbarga",
+    "services": [
+      "Two-wheeler training",
+      "Scooty training",
+      "NO 4-wheeler training"
+    ]
+  },
+  "qa_pairs": [
+    {
+      "category": "Location",
+      "question": "Where are you located?",
+      "answer": "We are located at Rainbow Paradise Building, opposite Royal shop, near KB Kalyan Mantap, Karaneshwar Nagar, Gulbarga/Kalaburagi. IMPORTANT: We only operate in this area. You must come to our location for training; we do not come to your home."
+    },
+    {
+      "category": "Pricing",
+      "question": "What are the fees for training?",
+      "answer": "The fee for a 10-day course is Rs 2600. Two-wheeler training with learning and permanent license is Rs 3000. NOTE: We ONLY teach two-wheelers/scooty. We do NOT provide car (4-wheeler) training."
+    },
+    {
+      "category": "Scheduling",
+      "question": "What are your hours of operation?",
+      "answer": "We are open from 9:30 AM to 6:30 PM. However, we take a lunch break from 1:30 PM to 2:30 PM and cannot accommodate anyone during that time. We have continuous batches otherwise."
+    },
+    {
+      "category": "License",
+      "question": "Do you provide a license?",
+      "answer": "We provide training, but the license has to be obtained online. We can direct you to Irani Motors, located opposite our office, where you can obtain a permanent license immediately after completing the training."
+    },
+    {
+      "category": "Course Details",
+      "question": "How long is the training course?",
+      "answer": "The training course is 10 days."
+    },
+    {
+      "category": "Training Structure",
+      "question": "How do you teach?",
+      "answer": "We use a solid technique developed over 10 years, having trained 4000+ women in Gulbarga. Uniquely, NO ONE sits behind you on the scooty, and there is NO touching; you learn to balance independently and safely. We teach the basics and the duration of each session depends on the individual's progress, ensuring no one is rushed or left behind."
+    },
+    {
+      "category": "License Requirements",
+      "question": "What are the age requirements for obtaining a license?",
+      "answer": "Individuals must be at least 18 years old to obtain a license."
+    },
+    {
+      "category": "Holidays",
+      "question": "Are you open on Sundays?",
+      "answer": "No, we are closed on Sundays."
+    },
+    {
+      "category": "Payment Methods",
+      "question": "What payment methods do you accept?",
+      "answer": "We accept all payment methods, including cash, UPI, and Gpay."
+    },
+    {
+      "category": "Registration",
+      "question": "What is the registration process?",
+      "answer": "Registration must be done at our office. Please bring a passport-size photo. You can pay in installments: Rs 1100 at the time of registration, and the remaining Rs 1500 within the next 3 days."
+    }
+  ]
+}

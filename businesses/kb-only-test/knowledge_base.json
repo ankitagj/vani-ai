@@ -1,0 +1,13 @@
+{
+    "business_info": {
+        "name": "KB Only Test Business",
+        "location": "123 Main St",
+        "owner": "Test Owner"
+    },
+    "qa_pairs": [
+        {
+            "question": "What are your hours?",
+            "answer": "We are open 9am to 5pm daily."
+        }
+    ]
+}

@@ -1,65 +1,41 @@
 {
   "business_info": {
     "name": "Rainbow Driving School",
-    "owner": "Savitha Jhawar",
-    "phone": "+91-9663925353",
-    "address": "Near KB Kalyan Mantap, Karaneshwar Nagar, Gulbarga",
+    "owner": "Not available",
+    "phone": "Not available",
+    "address": "Near K.B. Welfare Hall, Karaneshwar Nagar, Gulbarga",
     "services": [
       "Two-wheeler training",
+      "Four-wheeler training",
       "Scooty training",
-      "NO 4-wheeler training"
+      "License assistance (outsourced)"
     ]
   },
   "qa_pairs": [
     {
-      "category": "Location",
-      "question": "Where are you located?",
-      "answer": "We are located at Rainbow Paradise Building, opposite Royal shop, near KB Kalyan Mantap, Karaneshwar Nagar, Gulbarga/Kalaburagi. IMPORTANT: We only operate in this area. You must come to our location for training; we do not come to your home."
-    },
-    {
       "category": "Pricing",
-      "question": "What are the fees for training?",
-      "answer": "The fee for a 10-day course is Rs 2600. Two-wheeler training with learning and permanent license is Rs 3000. NOTE: We ONLY teach two-wheelers/scooty. We do NOT provide car (4-wheeler) training."
+      "question": "What are the pricing/packages?",
+      "answer": "The fee is Rs 2600 for a 10-day course. Two-wheeler learning with permanent license is Rs 3000. The minimum price for a four-wheeler is Rs 5000. The fee covers the cost of the car and petrol during training. License is not included in the fee and is handled online or through Irani Motors."
     },
     {
       "category": "Scheduling",
       "question": "What are your hours of operation?",
-      "answer": "We are open from 9:30 AM to 6:30 PM. However, we take a lunch break from 1:30 PM to 2:30 PM and cannot accommodate anyone during that time. We have continuous batches otherwise."
+      "answer": "The school is open from 9:30 AM to 6:30 PM, with continuous batches. Sunday is a holiday."
+    },
+    {
+      "category": "Location",
+      "question": "Where are you located?",
+      "answer": "We are located in Karaneshwar Nagar, near KB Kalyan Mantap, opposite Royal Shop, in Rainbow Paradise Building. Location can be found on Google Maps. From Ring Road, go to Jewargi Cross, then to Ram Temple, and then to Karneshwar Nagar."
+    },
+    {
+      "category": "Training Details",
+      "question": "How do you teach?",
+      "answer": "Training is dependent on the student's progress and basic skills. The school offers training for both two-wheelers and four-wheelers. For students without prior experience, they will teach from the basics. They adjust the training according to the student's learning pace."
     },
     {
       "category": "License",
-      "question": "Do you provide a license?",
-      "answer": "We provide training, but the license has to be obtained online. We can direct you to Irani Motors, located opposite our office, where you can obtain a permanent license immediately after completing the training."
-    },
-    {
-      "category": "Course Details",
-      "question": "How long is the training course?",
-      "answer": "The training course is 10 days."
-    },
-    {
-      "category": "Training Structure",
-      "question": "How do you teach?",
-      "answer": "We use a solid technique developed over 10 years, having trained 4000+ women in Gulbarga. Uniquely, NO ONE sits behind you on the scooty, and there is NO touching; you learn to balance independently and safely. We teach the basics and the duration of each session depends on the individual's progress, ensuring no one is rushed or left behind."
-    },
-    {
-      "category": "License Requirements",
-      "question": "What are the age requirements for obtaining a license?",
-      "answer": "Individuals must be at least 18 years old to obtain a license."
-    },
-    {
-      "category": "Holidays",
-      "question": "Are you open on Sundays?",
-      "answer": "No, we are closed on Sundays."
-    },
-    {
-      "category": "Payment Methods",
-      "question": "What payment methods do you accept?",
-      "answer": "We accept all payment methods, including cash, UPI, and Gpay."
-    },
-    {
-      "category": "Registration",
-      "question": "What is the registration process?",
-      "answer": "Registration must be done at our office. Please bring a passport-size photo. You can pay in installments: Rs 1100 at the time of registration, and the remaining Rs 1500 within the next 3 days."
+      "question": "Do you offer license services?",
+      "answer": "The school does not directly provide licenses. License application is done online. They can recommend Irani Motors opposite the school for permanent license processing after training."
     }
   ]
 }

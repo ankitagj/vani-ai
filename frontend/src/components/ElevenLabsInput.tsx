@@ -3,6 +3,8 @@ import { useScribe } from '@elevenlabs/react';
 
 interface VoiceInputProps {
     onTranscriptComplete: (transcript: string, messages?: Message[]) => Promise<any>;
+    agentName?: string;
+    businessId: string;
 }
 
 interface Message {
@@ -10,7 +12,7 @@ interface Message {
     text: string;
 }
 
-export const ElevenLabsInput: React.FC<VoiceInputProps> = ({ onTranscriptComplete }) => {
+export const ElevenLabsInput: React.FC<VoiceInputProps> = ({ onTranscriptComplete, agentName = "Assistant", businessId }) => {
     const [partialTranscript, setPartialTranscript] = useState<string>('');
     const [messages, setMessages] = useState<Message[]>([]);
     const [error, setError] = useState<string | null>(null);
@@ -69,11 +71,7 @@ export const ElevenLabsInput: React.FC<VoiceInputProps> = ({ onTranscriptComplet
             // We rely more on silence detection for "turn taking", but this helps update the view
             const final = data.text;
             if (final && final.trim()) {
-                // If Scribe commits, we can either wait for silence or treat it as a chunk.
-                // For this use case, let's just let silence timer handle the "User finished" event.
-                // But we update partial to show progress.
-                // setPartialTranscript(final); 
-                // Actually Scribe clears partial on commit, so we rely on silence logic mostly.
+                // Scribe commit
             }
         },
         onError: (e: any) => {
@@ -88,24 +86,9 @@ export const ElevenLabsInput: React.FC<VoiceInputProps> = ({ onTranscriptComplet
             clearTimeout(silenceTimerRef.current);
             silenceTimerRef.current = null;
         }
-
-        // Manual commit logic will handle the actual submission in handleToggleRecording/disconnect flow
-        // But since we call disconnect(), we need to trigger the submission logic manually or via a side effect.
-        // The previous implementation used handleToggleRecording logic for this.
-        // Let's call the submission logic explicitly here to be safe.
-
-        // We need the current partial transcript. Since state updates are async, 
-        // we might need a ref for partialTranscript if we want to access it inside this closure perfectly,
-        // but state usually works fine if we trigger an encoded action.
-        // However, we can use the "Manual commit" logic in the Effect or just trigger it here.
-
-        // Actually, the easiest way is to trigger a specific "commit" function.
     };
 
     // We need to capture the transition from connected -> disconnected to finalize text
-    // But since we want "silence -> stop -> submit", we can do it in the stopListening function
-    // accessing the state directly might be stale.
-    // Let's use a Ref for partial text to ensure freshness.
     const partialTextRef = useRef('');
     useEffect(() => {
         partialTextRef.current = partialTranscript;
@@ -127,6 +110,7 @@ export const ElevenLabsInput: React.FC<VoiceInputProps> = ({ onTranscriptComplet
                     session_id: sessionIdRef.current,
                     messages: messages,
                     language: conversationLanguageRef.current,
+                    business_id: businessId,
                     ended: ended
                 }),
             });
@@ -144,8 +128,7 @@ export const ElevenLabsInput: React.FC<VoiceInputProps> = ({ onTranscriptComplet
         'English': [
             '/fillers/filler_1.mp3',
             '/fillers/filler_2.mp3',
-            '/fillers/filler_3.mp3',
-            '/fillers/filler_4.mp3'
+            '/fillers/filler_3.mp3'
         ],
         'Hindi': [
             '/fillers/filler_hi_1.mp3',
@@ -182,7 +165,11 @@ export const ElevenLabsInput: React.FC<VoiceInputProps> = ({ onTranscriptComplet
     };
 
     const submitUserQuery = async (text: string) => {
-        if (!text || !text.trim()) return;
+        // Ignore empty or very short inputs (noise)
+        if (!text || text.trim().length < 3) {
+            addDebug(`Ignored short input: "${text}"`);
+            return;
+        }
 
         setPartialTranscript('');
         // Add user message
@@ -195,12 +182,6 @@ export const ElevenLabsInput: React.FC<VoiceInputProps> = ({ onTranscriptComplet
 
         try {
             const response = await onTranscriptComplete(text, messages); // Pass history so backend knows context
-
-            // Stop filler once we have the response (or ideally when TTS starts, but this is close enough)
-            // actually playAudioResponse will be called next. 
-            // We should ideally let playAudioResponse stop it to avoid dead air if TTS fetch takes time.
-            // But response generation is the long part. TTS generation is fast.
-            // So we can stop here or inside playAudioResponse.
 
             const textToSpeak = response.answer || response.response;
             const detectedLanguage = response.query_language || 'English';
@@ -253,49 +234,108 @@ export const ElevenLabsInput: React.FC<VoiceInputProps> = ({ onTranscriptComplet
     const playAudioResponse = async (text: string, language: string = 'English') => {
         try {
             isPlayingRef.current = true;
-            addDebug(`Fetching audio (${language})...`);
+            addDebug(`Fetching audio stream (${language})...`);
 
-            // Note: We leave filler playing while fetching TTS to cover that gap too
+            const mediaSource = new MediaSource();
+            const audioUrl = URL.createObjectURL(mediaSource);
+            const audio = new Audio(audioUrl);
 
-            const response = await fetch('/tts', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ text, language }),
-            });
-
-            if (!response.ok) throw new Error('TTS failed');
-
-            const blob = await response.blob();
-            const url = URL.createObjectURL(blob);
-            const audio = new Audio(url);
-
-            // STOP FILLER NOW - ready to play real audio
-            stopFiller();
-
-            // Sync: Start typewriter when audio starts
-            let typeWriterInterval: any;
-
-            audio.onplay = () => {
-                addDebug('Audio started. Typing text...');
-                // IMPORTANT: Start the typewriter AFTER audio begins
-                typeWriterInterval = typeWriterEffect(text);
-            };
-
+            // Clean up on end
             audio.onended = () => {
                 addDebug('Audio ended. Restarting listener...');
                 isPlayingRef.current = false;
-                if (typeWriterInterval) clearInterval(typeWriterInterval);
-
-                // Auto-restart listening
+                URL.revokeObjectURL(audioUrl); // release memory
                 startListening();
             };
 
-            await audio.play();
+            // Handle errors
+            audio.onerror = (e) => {
+                addDebug(`Audio error: ${e}`);
+                isPlayingRef.current = false;
+                startListening();
+            };
+
+            // Setup streaming when source opens
+            mediaSource.addEventListener('sourceopen', async () => {
+                try {
+                    const sourceBuffer = mediaSource.addSourceBuffer('audio/mpeg');
+
+                    const response = await fetch('/tts', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ text, language }),
+                    });
+
+                    if (!response.ok) throw new Error('TTS response failed');
+                    if (!response.body) throw new Error('No response body');
+
+                    const reader = response.body.getReader();
+                    const queue: Uint8Array[] = [];
+                    let isUpdating = false;
+
+                    const processQueue = () => {
+                        if (queue.length > 0 && !isUpdating) {
+                            try {
+                                const chunk = queue.shift();
+                                if (chunk) {
+                                    isUpdating = true;
+                                    sourceBuffer.appendBuffer(chunk as unknown as BufferSource);
+                                }
+                            } catch (e) {
+                                console.error('Buffer append error', e);
+                            }
+                        }
+                    };
+
+                    sourceBuffer.addEventListener('updateend', () => {
+                        isUpdating = false;
+                        processQueue();
+                    });
+
+                    // Stop filler as soon as we establish stream
+                    stopFiller();
+
+                    // Start typewriter immediately
+                    typeWriterEffect(text);
+
+                    // Read loop
+                    while (true) {
+                        const { done, value } = await reader.read();
+                        if (done) {
+                            if (!isUpdating && queue.length === 0) {
+                                mediaSource.endOfStream();
+                            } else {
+                                // Wait for queue to drain
+                                const checkEnd = setInterval(() => {
+                                    if (!isUpdating && queue.length === 0) {
+                                        clearInterval(checkEnd);
+                                        try { mediaSource.endOfStream(); } catch (e) { }
+                                    }
+                                }, 100);
+                            }
+                            break;
+                        }
+
+                        if (value) {
+                            queue.push(value);
+                            processQueue();
+
+                            // Try to start playing as soon as we have data
+                            if (audio.paused) {
+                                audio.play().catch(e => console.log("Auto-play prevented", e));
+                            }
+                        }
+                    }
+                } catch (err: any) {
+                    addDebug(`Stream error: ${err.message}`);
+                    mediaSource.endOfStream();
+                }
+            });
+
         } catch (err: any) {
-            stopFiller(); // Stop if TTS fails
+            stopFiller();
             isPlayingRef.current = false;
-            addDebug(`Playback error: ${err.message}`);
-            // Start listening anyway if audio fails, to keep flow
+            addDebug(`Playback launch error: ${err.message}`);
             startListening();
         }
     };
@@ -326,15 +366,9 @@ export const ElevenLabsInput: React.FC<VoiceInputProps> = ({ onTranscriptComplet
 
     const handleManualStop = () => {
         stopListening();
-        // Allow the "disconnect" effect to handle submission? 
-        // Or just call it directly.
-        // We'll use a unified trigger.
     };
 
     // Watch for disconnection to trigger submission (if we have text)
-    // This covers both manual stop and silence timeout stop.
-    // We need to avoid double-submission if verify.
-    // Let's use a "status" effect.
     useEffect(() => {
         if (status === 'disconnected' && partialTextRef.current) {
             const textToSubmit = partialTextRef.current;
@@ -344,30 +378,23 @@ export const ElevenLabsInput: React.FC<VoiceInputProps> = ({ onTranscriptComplet
     }, [status]); // When status changes to disconnected, submit.
 
     return (
-        <div style={styles.container}>
-            <div style={styles.headerContainer}>
-                <h2 style={styles.header}>SavitaDevi</h2>
-                <div style={styles.statusIndicator}>
-                    Status: <span style={{ color: status === 'connected' || status === 'transcribing' ? '#2ecc71' : '#95a5a6' }}>
+        <div className="chat-wrapper">
+            <div className="chat-header">
+                <h2>{agentName}</h2>
+                <div className="chat-status">
+                    Status: <span style={{ color: status === 'connected' || status === 'transcribing' ? 'var(--success-color)' : 'var(--text-secondary)' }}>
                         {status === 'connected' || status === 'transcribing' ? 'Listening...' : status}
                     </span>
-                    {isPlayingRef.current && <span style={{ color: '#007bff', marginLeft: '10px' }}>Speaking...</span>}
+                    {isPlayingRef.current && <span style={{ color: 'var(--accent-color)', marginLeft: '10px' }}>Speaking...</span>}
                 </div>
             </div>
 
-            <div style={styles.chatContainer}>
+            <div className="chat-body">
                 {messages.map((msg, index) => (
-                    <div key={index} style={{
-                        ...styles.messageRow,
+                    <div key={index} className="message-row" style={{
                         justifyContent: msg.role === 'user' ? 'flex-end' : 'flex-start'
                     }}>
-                        <div style={{
-                            ...styles.messageBubble,
-                            backgroundColor: msg.role === 'user' ? '#007bff' : '#e9ecef',
-                            color: msg.role === 'user' ? 'white' : 'black',
-                            borderBottomRightRadius: msg.role === 'user' ? '0' : '12px',
-                            borderBottomLeftRadius: msg.role === 'assistant' ? '0' : '12px',
-                        }}>
+                        <div className={`message-bubble ${msg.role === 'user' ? 'msg-user' : 'msg-assistant'}`}>
                             {msg.text}
                         </div>
                     </div>
@@ -375,8 +402,8 @@ export const ElevenLabsInput: React.FC<VoiceInputProps> = ({ onTranscriptComplet
 
                 {/* Partial transcript */}
                 {partialTranscript && (
-                    <div style={{ ...styles.messageRow, justifyContent: 'flex-end' }}>
-                        <div style={{ ...styles.messageBubble, backgroundColor: '#007bff', opacity: 0.7, color: 'white' }}>
+                    <div className="message-row" style={{ justifyContent: 'flex-end' }}>
+                        <div className="message-bubble msg-user" style={{ opacity: 0.7 }}>
                             {partialTranscript}...
                         </div>
                     </div>
@@ -384,110 +411,32 @@ export const ElevenLabsInput: React.FC<VoiceInputProps> = ({ onTranscriptComplet
                 <div ref={messagesEndRef} />
             </div>
 
-            {error && <div style={styles.errorBanner}>{error}</div>}
+            {error && <div style={{ background: '#f44336', color: 'white', padding: '10px', textAlign: 'center' }}>{error}</div>}
 
-            <div style={styles.controlsContainer}>
+            <div className="chat-controls">
+
+
                 <button
                     onClick={status === 'connected' || status === 'transcribing' ? handleManualStop : startListening}
                     disabled={status === 'connecting' || isPlayingRef.current}
+                    className="btn-primary"
                     style={{
-                        ...styles.mainButton,
-                        backgroundColor: status === 'connected' || status === 'transcribing' ? '#dc3545' : '#28a745',
+                        width: '100%',
+                        backgroundColor: status === 'connected' || status === 'transcribing' ? 'var(--error-color)' : 'var(--success-color)',
                         opacity: isPlayingRef.current ? 0.5 : 1
                     }}
                 >
                     {isPlayingRef.current ? 'Agent Speaking...' :
-                        (status === 'connected' || status === 'transcribing' ? 'Stop Recording' : 'Start Conversation')}
+                        (status === 'connected' || status === 'transcribing' ? 'Stop Recording' : 'Start Voice Conversation')}
                 </button>
             </div>
 
-            <details style={styles.debugDetails}>
-                <summary style={{ cursor: 'pointer', color: '#666' }}>Show Debug Logs</summary>
-                <div style={styles.debugLog}>
+            <details className="debug-details">
+                <summary style={{ cursor: 'pointer' }}>Show Debug Logs</summary>
+                <div style={{ marginTop: '10px', maxHeight: '100px', overflowY: 'auto' }}>
                     {debugLog.map((log, i) => <div key={i}>{log}</div>)}
                 </div>
             </details>
         </div>
     );
-};
-
-const styles: { [key: string]: React.CSSProperties } = {
-    container: {
-        fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif',
-        maxWidth: '500px',
-        margin: '20px auto',
-        backgroundColor: '#fff',
-        borderRadius: '20px',
-        boxShadow: '0 10px 25px rgba(0,0,0,0.1)',
-        overflow: 'hidden',
-        display: 'flex',
-        flexDirection: 'column',
-        height: '80vh',
-    },
-    headerContainer: {
-        padding: '20px',
-        borderBottom: '1px solid #eee',
-        backgroundColor: '#f8f9fa',
-        textAlign: 'center',
-    },
-    header: { margin: 0, fontSize: '1.2rem', color: '#333' },
-    statusIndicator: { fontSize: '0.8rem', marginTop: '5px', color: '#888' },
-    chatContainer: {
-        flex: 1,
-        padding: '20px',
-        overflowY: 'auto',
-        display: 'flex',
-        flexDirection: 'column',
-        gap: '12px',
-        backgroundColor: '#ffffff',
-    },
-    messageRow: {
-        display: 'flex',
-        width: '100%',
-    },
-    messageBubble: {
-        maxWidth: '80%',
-        padding: '12px 16px',
-        borderRadius: '12px',
-        fontSize: '0.95rem',
-        lineHeight: '1.4',
-        boxShadow: '0 1px 2px rgba(0,0,0,0.05)',
-    },
-    controlsContainer: {
-        padding: '20px',
-        borderTop: '1px solid #eee',
-        backgroundColor: '#f8f9fa',
-        textAlign: 'center',
-    },
-    mainButton: {
-        width: '100%',
-        padding: '15px',
-        fontSize: '1.1rem',
-        fontWeight: '600',
-        color: 'white',
-        border: 'none',
-        borderRadius: '12px',
-        cursor: 'pointer',
-        transition: 'background-color 0.2s',
-    },
-    errorBanner: {
-        backgroundColor: '#ffebee',
-        color: '#c62828',
-        padding: '10px',
-        fontSize: '0.9rem',
-        textAlign: 'center',
-    },
-    debugDetails: {
-        padding: '10px 20px',
-        backgroundColor: '#f1f1f1',
-        fontSize: '0.8rem',
-    },
-    debugLog: {
-        marginTop: '10px',
-        maxHeight: '100px',
-        overflowY: 'auto',
-        fontFamily: 'monospace',
-        whiteSpace: 'pre-wrap',
-        color: '#333',
-    }
 };

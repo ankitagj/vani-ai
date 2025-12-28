@@ -23,8 +23,8 @@ except ImportError:
 class TranscriptQueryAgent:
     """Agent that uses Gemini to answer queries based on transcribed call recordings"""
     
-    def __init__(self, transcripts_dir="transcripts", api_key=None):
-        """Initialize the query agent with transcript knowledge base"""
+    def __init__(self, business_id=None, api_key=None):
+        """Initialize the query agent for a specific business"""
         if not GEMINI_AVAILABLE:
             raise ImportError("Google Gemini SDK is required. Install with: pip install google-genai")
         
@@ -36,15 +36,31 @@ class TranscriptQueryAgent:
         
         self.api_key = api_key
         self.client = genai.Client(api_key=api_key)
-        self.transcripts_dir = Path(transcripts_dir)
         
-        # Load all transcripts
-        self.transcripts = self._load_transcripts()
-        print(f"📚 Loaded {len(self.transcripts)} transcript files")
+        self.business_id = business_id
+        if business_id:
+            self.base_path = Path(f"businesses/{business_id}")
+            self.transcripts_dir = self.base_path / "transcripts"
+        else:
+            # Fallback or "Default"
+            self.base_path = Path(".")
+            self.transcripts_dir = Path("transcripts")
+
+        # Load Business Config
+        self.config = {}
+        config_path = self.base_path / "business_config.json"
         
+        if config_path.exists():
+            try:
+                with open(config_path, 'r') as f:
+                    self.config = json.load(f)
+                print(f"🏢 Loaded config for: {self.config.get('business_name')} ({business_id})")
+            except Exception as e:
+                print(f"⚠️ Failed to load business config: {e}")
+
         # Load Knowledge Base (if exists)
         self.knowledge_base = None
-        kb_path = Path("knowledge_base.json")
+        kb_path = self.base_path / "knowledge_base.json"
         if kb_path.exists():
             try:
                 with open(kb_path, 'r') as f:
@@ -53,24 +69,60 @@ class TranscriptQueryAgent:
             except Exception as e:
                 print(f"⚠️ Failed to load Knowledge Base: {e}")
         
+        # Load all transcripts (if needed for fallback)
+        self.transcripts = self._load_transcripts()
+        print(f"📚 Loaded {len(self.transcripts)} transcript files for {business_id}")
+        
         # Try different models in order
         # Try different models in order - prioritize the one that works (gemini-2.0-flash-exp)
         self.models_to_try = ["gemini-2.0-flash-exp", "gemini-1.5-flash", "gemini-1.5-pro", "gemini-1.5-flash-8b", "gemini-1.0-pro"]
         self.model_name = None
+        
+        # Cache for context to avoid rebuilding every time
+        self.cached_context = None
+
+    def reload(self):
+        """Reload configuration, KB, and transcripts (clears cache)"""
+        print(f"🔄 Reloading agent for {self.business_id}...")
+        
+        # Reload Config
+        self.config = {}
+        config_path = self.base_path / "business_config.json"
+        if config_path.exists():
+            try:
+                with open(config_path, 'r') as f:
+                    self.config = json.load(f)
+            except Exception as e:
+                print(f"⚠️ Failed to reload config: {e}")
+
+        # Reload KB
+        self.knowledge_base = None
+        kb_path = self.base_path / "knowledge_base.json"
+        if kb_path.exists():
+            try:
+                with open(kb_path, 'r') as f:
+                    self.knowledge_base = json.load(f)
+            except Exception as e:
+                print(f"⚠️ Failed to reload KB: {e}")
+        
+        # Reload Transcripts
+        self.transcripts = self._load_transcripts()
+        
+        # Clear Cache
+        self.cached_context = None
+        print("✅ Agent reloaded successfully.")
     
     def _load_transcripts(self) -> List[Dict]:
         """Load all JSON transcript files"""
         transcripts = []
         
         if not self.transcripts_dir.exists():
-            print(f"⚠️  Transcripts directory not found: {self.transcripts_dir}")
             return transcripts
         
         # Find all JSON transcript files
         json_files = list(self.transcripts_dir.glob("*_gemini_*.json"))
         
         if not json_files:
-            print(f"⚠️  No Gemini transcript files found in {self.transcripts_dir}")
             return transcripts
         
         for json_file in sorted(json_files):
@@ -87,6 +139,10 @@ class TranscriptQueryAgent:
     
     def _get_transcript_context(self) -> str:
         """Format context for Gemini from Knowledge Base or Transcripts"""
+        # Return cached context if available
+        if self.cached_context:
+            return self.cached_context
+
         # PRIORITY 1: USE STRUCTURED KNOWLEDGE BASE
         if self.knowledge_base:
             kb = self.knowledge_base
@@ -106,7 +162,8 @@ class TranscriptQueryAgent:
                 a = item.get('answer')
                 context_parts.append(f"Q: {q}\nA: {a}\n")
             
-            return "\n".join(context_parts)
+            self.cached_context = "\n".join(context_parts)
+            return self.cached_context
             
         # PRIORITY 2: FALLBACK TO RAW TRANSCRIPTS
         if not self.transcripts:
@@ -134,7 +191,8 @@ class TranscriptQueryAgent:
                 context_parts.append(transcript_text)
                 context_parts.append("")  # Empty line between transcripts
         
-        return "\n".join(context_parts)
+        self.cached_context = "\n".join(context_parts)
+        return self.cached_context
     
     def _detect_query_language(self, query: str) -> str:
         """Detect the language of the query - only Hindi or English"""
@@ -180,30 +238,23 @@ class TranscriptQueryAgent:
             language: Optional language override (Hindi/English)
             conversation_history: List of previous messages [{"role": "user/assistant", "text": "..."}]
         """
-        if not self.transcripts:
+        if not self.transcripts and not self.knowledge_base:
             return {
                 "query": query,
-                "answer": "No transcripts available. Please transcribe some call recordings first.",
-                "error": "No transcripts loaded"
+                "answer": "No information available. Please upload recordings or documents to build the knowledge base.",
+                "error": "No transcripts or KB loaded"
             }
         
         # Move initialization inside try block to catch setup errors
         try:
-            # Detect language if not provided
-            if not language:
-                language = self._detect_query_language(query)
+            # Detect initial language (heuristic)
+            heuristic_lang = self._detect_query_language(query)
             
             # Initialize model (if not already cached)
             model_name = self._initialize_model()
             
             # Get transcript context
             context = self._get_transcript_context()
-            
-            # Create prompt with strong language matching instruction (Hindi or English only)
-            language_instruction = {
-                "Hindi": "हिंदी में बात करें (Respond in Hindi - keep it casual and friendly)",
-                "English": "Respond in English"
-            }.get(language, "Respond in English")
             
             # Analyze conversation history for lead capture logic
             conversation_history = conversation_history or []
@@ -212,15 +263,15 @@ class TranscriptQueryAgent:
             user_turns = sum(1 for msg in conversation_history if msg.get('role') == 'user')
             current_turn = user_turns + 1
             
-            # Check if we already asked for contact info
+            # Check if we already asked for contact info in ANY previous turn
             asked_for_contact = any(
-                "name" in msg.get('text', '').lower() and "phone" in msg.get('text', '').lower() 
+                ("name" in msg.get('text', '').lower() and "phone" in msg.get('text', '').lower()) or
+                ("naam" in msg.get('text', '').lower() and "number" in msg.get('text', '').lower())
                 for msg in conversation_history 
                 if msg.get('role') == 'assistant'
             )
             
-            # Check if user provided contact info (simple heuristic)
-            # Look for numbers with 10 digits
+            # Check if user provided contact info (regex heuristic)
             import re
             provided_contact = any(
                 re.search(r'\d{10}', msg.get('text', '')) or re.search(r'\d{3}[-\s]\d{3}[-\s]\d{4}', msg.get('text', ''))
@@ -231,57 +282,66 @@ class TranscriptQueryAgent:
             # Determine lead capture instruction
             lead_capture_instruction = ""
             if not asked_for_contact and not provided_contact:
+                # Ask in the first 2 turns ONLY
                 if current_turn <= 2:
                     lead_capture_instruction = "IMPORTANT: You MUST ask for their name and phone number in this response. Say something like 'May I have your name and number so I can better assist you?'"
                 else:
-                    # If late in conversation, don't force it unless really relevant, but user said "ensure within 1st 2 questions"
-                    # So we interpret as: if missed, don't annoy them? Or catch up? 
-                    # Let's say: catch up if it's still early-ish (turn 3), otherwise drop it to be non-intrusive?
-                    # User said: "ensure this information is only asked once and captured within 1st 2 questions"
-                    # This implies STRICTLY in first 2. If we missed it (e.g. error), maybe ask? 
-                    # But safer to strict ask in turn 1 or 2.
-                    pass
-            elif asked_for_contact or provided_contact:
-                lead_capture_instruction = "DO NOT ask for name or phone number. We already have it or asked for it."
+                    # If we missed it early, don't nag them late in conversation
+                    lead_capture_instruction = "DO NOT ask for name or phone number now. Focus on the query."
+            else:
+                # If we asked OR they provided, never ask again
+                lead_capture_instruction = "**DO NOT** ask for name or phone number. We already have it or asked for it."
 
             # Determine greeting instruction
+            # Only greet if this is the absolute first message (no history)
             greeting_instruction = "Greet the customer warmly."
-            if current_turn > 1:
-                greeting_instruction = "DO NOT greet the customer (no 'Hello', 'Hi', etc.). Go straight to the answer."
+            if len(conversation_history) > 0:
+                greeting_instruction = "**DO NOT** greet the customer (no 'Hello', 'Hi', 'Namaste', etc.). Go straight to the answer."
             
             # Get business details for fallback
-            owner_name = "us"
-            owner_phone = "directly"
-            if self.knowledge_base:
-                biz = self.knowledge_base.get('business_info', {})
-                if biz.get('owner'): owner_name = biz.get('owner')
-                if biz.get('phone'): owner_phone = biz.get('phone')
+            owner_name = self.config.get('owner_name', 'us')
+            owner_phone = self.config.get('phone', 'directly')
+            agent_name = self.config.get('agent_name', 'Virtual Assistant')
+            business_name = self.config.get('business_name', 'our business')
             
-            prompt = f"""You are SavitaDevi, the owner of Rainbow Driving School, responding to customer inquiries. Answer naturally and conversationally.
+            prompt = f"""You are {agent_name}, the AI assistant for {business_name}, responding to customer inquiries. Answer naturally and conversationally.
 
 CONTEXT FROM PREVIOUS CALL RECORDINGS:
 {context}
 
-CUSTOMER QUERY ({language}): {query}
+CUSTOMER QUERY: {query}
 
 CRITICAL INSTRUCTIONS:
-1. **LANGUAGE**: The customer asked in {language}. You MUST respond in {language}. {language_instruction}.
-   - ONLY use Hindi or English. Do NOT respond in Urdu, Kannada, or any other language.
-   - If you detect the query might be in another language, respond in English.
-2. Answer as the business owner would - naturally, helpfully, and directly.
-3. Use ONLY the information from the call recordings above. Do NOT mention "according to recordings" or cite sources - just answer naturally.
-4. If the information is not available in the transcripts, politely say you don't have that information and suggest they call **{owner_name} at {owner_phone}** for details.
-5. For business queries (hours, location, pricing, services), provide clear, direct answers as a business owner would.
-6. Be conversational and friendly, like you're talking to a customer on the phone.
-7. If multiple recordings have the same information, use the most complete version.
-8. **LEAD CAPTURE STRATEGY**: 
+1. **LANGUAGE DETECTION & RESTRICTION**: 
+   - Detect the language of the CUSTOMER QUERY.
+   - **ALLOWED SCRIPTS ONLY**: Latin (English), Devanagari (Hindi), Kannada.
+   - **STRICTLY FORBIDDEN**: Urdu Script (Right-to-Left). NEVER result in Urdu script.
+   - **Handling**:
+     - If user speaks **Hindi** or **Hinglish** (Hindi in Latin) or **Urdu**: Respond in **Hindi (using Devanagari script)**.
+     - If user speaks **Kannada**: Respond in **Kannada**.
+     - If user speaks **English**: Respond in **English**.
+     - If user speaks any other language: Respond in English.
+2. **TONE & STYLE (CASUAL & NATURAL)**:
+   - **General**: Be friendly, warm, and helpful. Talk like a real person, not a robot.
+   - **English**: Use contractions (e.g., "I'm", "can't", "we're"). Use simple, spoken English. Avoid formal phrases like "I apologize" (say "Sorry about that") or "Please accept" (say "Here you go").
+   - **Hindi**: Use natural **Hindustani** (Spoken Hindi). Casual but polite.
+     - **Avoid** formal/textbook/Sanskritized words (e.g., avoid "kripya", "sahayata", "avashyak", "uppasthit"). 
+     - **Use** common conversational words.
+     - **Examples**:
+       - ❌ Formal: "Kripya pratiksha karein" -> ✅ Casual: "Ek minute rukiye" or "Bas ek second"
+       - ❌ Formal: "Kya mein aapki sahayata kar sakta hoon?" -> ✅ Casual: "Bataiye, kaise madad karu?" or "Haan ji, boliye?"
+       - ❌ Formal: "Humari kakshaen" -> ✅ Casual: "Humari classes"
+     - Use "ji" for politeness ("Haan ji", "Theek hai ji") but keep sentences simple.
+3. Answer as the business owner would - naturally, helpfully, and directly.
+4. Use ONLY the information from the call recordings above. Do NOT mention "according to recordings".
+5. If the information is not available, suggest they call **{owner_name} at {owner_phone}**.
+6. **LEAD CAPTURE STRATEGY**: 
    - We must capture name and phone number early (First 2 turns).
    - {lead_capture_instruction}
-   - If asking, request BOTH together: "May I have your name and phone number?"
-   - NEVER ask if you already asked or if they gave it.
-9. **GREETING**: {greeting_instruction}
+   - If asking, request BOTH together.
+7. **GREETING**: {greeting_instruction}
 
-Respond as SavitaDevi in {language}:"""
+Respond as {agent_name} (in Hindi Devanagari if user used Hindi/Hinglish, otherwise English):"""
         
             # Generate response with retries
             max_retries = 3
@@ -305,9 +365,15 @@ Respond as SavitaDevi in {language}:"""
                     
                     answer = response.text.strip()
                     
+                    # Detect language from ANSWER (to guide TTS)
+                    # If answer contains Devanagari, it is Hindi
+                    final_language = "English"
+                    if any('\u0900' <= c <= '\u097F' for c in answer):
+                        final_language = "Hindi"
+                    
                     return {
                         "query": query,
-                        "query_language": language,
+                        "query_language": final_language,
                         "answer": answer,
                         "model": model_name,
                         "timestamp": datetime.now().isoformat(),

@@ -1,0 +1,75 @@
+{
+  "business_info": {
+    "name": "Domino's Pizza",
+    "owner": null,
+    "phone": "(408) 298-3030",
+    "address": "576 E Santa Clara St, San Jose, CA 95112",
+    "services": [
+      "Pizza delivery",
+      "Carryout",
+      "Carside Delivery"
+    ]
+  },
+  "qa_pairs": [
+    {
+      "category": "Pricing",
+      "question": "What deals and specials are available?",
+      "answer": "We offer a Mix & Match Deal where you can choose 2 or more items like medium 2-topping pizzas, breads, salads, chicken, sandwiches, or pasta for $6.99 each. We also have a Weeklong Carryout Special featuring large 1-topping pizzas for $7.99. Please note that delivery fees are separate, typically ranging from $4.99 to $6.99, and do not go to the driver."
+    },
+    {
+      "category": "Hours of Operation",
+      "question": "What are your hours of operation?",
+      "answer": "Our store at 576 E Santa Clara St is open until 1:00 AM from Sunday to Thursday, and until 2:00 AM on Friday and Saturday. Other San Jose locations are generally open until 12:00 AM."
+    },
+    {
+      "category": "Menu",
+      "question": "What crust options do you have?",
+      "answer": "We offer Hand Tossed, Thin Crust, Brooklyn Style, Handmade Pan, and Gluten-Free (Small only) crust options."
+    },
+    {
+      "category": "Menu",
+      "question": "What kind of sides do you offer?",
+      "answer": "We have Wings (Buffalo, BBQ, Garlic Parms), Stuffed Cheesy Bread, Bread Twists, and Parmesan Bread Bites available as sides."
+    },
+    {
+      "category": "Menu",
+      "question": "What desserts do you have?",
+      "answer": "We serve Chocolate Lava Crunch Cakes, Marbled Cookie Brownies, and Cinnamon Bread Twists for dessert."
+    },
+    {
+      "category": "Menu",
+      "question": "What beverages do you offer?",
+      "answer": "We carry Coca-Cola products in 2-Liter and 20oz bottles."
+    },
+    {
+      "category": "Rewards Program",
+      "question": "How does your rewards program work?",
+      "answer": "Customers earn 10 points per order of $10 or more. 20 Points can be redeemed for a Free Dipping Cup or 16pc Parmesan Bread Bites. 40 Points will get you a Free Stuffed Cheesy Bread or Bread Twists. 60 Points will get you a Free Medium 2-Topping Pizza, Pasta, or Sandwich."
+    },
+    {
+      "category": "Customer Service",
+      "question": "What if my order is late?",
+      "answer": "We apologize for any late orders and offer to check the \"Domino's Tracker\" for an update."
+    },
+    {
+      "category": "Customer Service",
+      "question": "What can be done if my food is wrong or cold?",
+      "answer": "We offer a remake of the item for delivery/pickup or provide a store credit for a future order if your food is wrong or cold."
+    },
+    {
+      "category": "Customer Service",
+      "question": "Can I cancel my order?",
+      "answer": "Orders can be cancelled if they have not yet entered the oven."
+    },
+    {
+      "category": "Payment",
+      "question": "What forms of payment do you accept?",
+      "answer": "We accept Cash, Credit Cards (Visa, MC, Amex, Discover), and Domino's Gift Cards."
+    },
+    {
+      "category": "Operational Policies",
+      "question": "Do your drivers carry much change?",
+      "answer": "For delivery safety, our drivers carry less than $20.00 in change."
+    }
+  ]
+}

@@ -9,10 +9,11 @@ from google.genai import types
 # Load environment variables
 load_dotenv()
 
-def extract_knowledge_base():
+def extract_knowledge_base(business_id=None):
     """
-    Reads all transcripts, sends them to Gemini to extract a structured Knowledge Base,
-    and saves the result to knowledge_base.json.
+    Reads all transcripts from businesses/{business_id}/transcripts,
+    sends them to Gemini to extract a structured Knowledge Base,
+    and saves the result to businesses/{business_id}/knowledge_base.json.
     """
     api_key = os.getenv('GEMINI_API_KEY')
     if not api_key:
@@ -21,23 +22,26 @@ def extract_knowledge_base():
 
     client = genai.Client(api_key=api_key)
     
-    # 1. Load Transcripts
-    transcripts_dir = Path("transcripts")
+    # 1. Determine paths
+    if business_id:
+        base_path = Path(f"businesses/{business_id}")
+    else:
+        base_path = Path(".") # Fallback for backward compatibility or root run
+        
+    transcripts_dir = base_path / "transcripts"
     transcript_files = glob.glob(str(transcripts_dir / "*.json"))
     
     if not transcript_files:
-        print("❌ No transcript files found in transcripts/")
+        print(f"❌ No transcript files found in {transcripts_dir}")
         return
 
-    print(f"📚 Found {len(transcript_files)} transcript files. Loading...")
+    print(f"📚 Found {len(transcript_files)} transcript files in {transcripts_dir}. Loading...")
     
     all_text = ""
     for file_path in transcript_files:
         try:
             with open(file_path, 'r') as f:
                 data = json.load(f)
-                # content = data.get('transcript') or data.get('transcript_original') or ""
-                # Better: include filename for context if needed, but for consolidation just text is fine
                 filename = Path(file_path).name
                 content = data.get('transcript', '')
                 if not content:
@@ -48,11 +52,20 @@ def extract_knowledge_base():
         except Exception as e:
             print(f"⚠️ Error reading {file_path}: {e}")
 
+    # Load Config
+    config = {}
+    config_path = base_path / "business_config.json"
+    if config_path.exists():
+        with open(config_path, 'r') as f:
+            config = json.load(f)
+    
+    business_name = config.get("business_name", "the business")
+
     print(f"📝 Total accumulated text length: {len(all_text)} characters.")
 
     # 2. Construct Prompt
     # We want a structured JSON output.
-    prompt = """You are an expert knowledge engineer. Your task is to analyze the following raw call transcripts from "Rainbow Driving School" and convert them into a structured Knowledge Base.
+    prompt = f"""You are an expert knowledge engineer. Your task is to analyze the following raw call transcripts from "{business_name}" and convert them into a structured Knowledge Base.
 
 INPUT TRANSCRIPTS:
 """ + all_text + """
@@ -116,7 +129,7 @@ Make sure the JSON is valid. Do not include Markdown formatting like ```json ...
         # Verify JSON
         try:
             parsed_kb = json.loads(kb_content)
-            output_file = "knowledge_base.json"
+            output_file = base_path / "knowledge_base.json"
             with open(output_file, 'w') as f:
                 json.dump(parsed_kb, f, indent=2)
             print(f"✅ Knowledge Base saved to {output_file}")

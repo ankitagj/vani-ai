@@ -28,6 +28,7 @@ class LeadsDatabase:
             CREATE TABLE IF NOT EXISTS conversations (
                 id INTEGER PRIMARY KEY AUTOINCREMENT,
                 session_id TEXT UNIQUE NOT NULL,
+                business_id TEXT DEFAULT 'rainbow_default',
                 started_at TIMESTAMP NOT NULL,
                 ended_at TIMESTAMP,
                 customer_name TEXT,
@@ -40,16 +41,23 @@ class LeadsDatabase:
             )
         """)
         
+        # Simple migration: try adding business_id column if it doesn't exist
+        try:
+            cursor.execute("ALTER TABLE conversations ADD COLUMN business_id TEXT DEFAULT 'rainbow_default'")
+        except sqlite3.OperationalError:
+            # Column likely already exists
+            pass
+            
         self.conn.commit()
     
-    def create_conversation(self, session_id: str, language: str = "English") -> int:
+    def create_conversation(self, session_id: str, language: str = "English", business_id: str = "rainbow_default") -> int:
         """Create a new conversation record"""
         cursor = self.conn.cursor()
         
         cursor.execute("""
-            INSERT INTO conversations (session_id, started_at, language, messages)
-            VALUES (?, ?, ?, ?)
-        """, (session_id, datetime.now().isoformat(), language, json.dumps([])))
+            INSERT INTO conversations (session_id, business_id, started_at, language, messages)
+            VALUES (?, ?, ?, ?, ?)
+        """, (session_id, business_id, datetime.now().isoformat(), language, json.dumps([])))
         
         self.conn.commit()
         return cursor.lastrowid
@@ -106,14 +114,20 @@ class LeadsDatabase:
             return dict(row)
         return None
     
-    def get_all_conversations(self, limit: int = 100) -> List[Dict]:
-        """Get all conversations, most recent first"""
+    def get_all_conversations(self, limit: int = 100, business_id: Optional[str] = None) -> List[Dict]:
+        """Get all conversations, filtered by business_id if provided"""
         cursor = self.conn.cursor()
-        cursor.execute("""
-            SELECT * FROM conversations 
-            ORDER BY created_at DESC 
-            LIMIT ?
-        """, (limit,))
+        query = "SELECT * FROM conversations"
+        params = []
+        
+        if business_id:
+            query += " WHERE business_id = ?"
+            params.append(business_id)
+            
+        query += " ORDER BY created_at DESC LIMIT ?"
+        params.append(limit)
+        
+        cursor.execute(query, tuple(params))
         
         return [dict(row) for row in cursor.fetchall()]
     
