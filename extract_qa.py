@@ -112,40 +112,65 @@ JSON STRUCTURE:
 Make sure the JSON is valid. Do not include Markdown formatting like ```json ... ```.
 """
 
-    # 3. Call Gemini
+    # 3. Call Gemini with Retry Logic
     print("🤖 Sending to Gemini (gemini-2.0-flash-exp) for extraction...")
-    try:
-        response = client.models.generate_content(
-            model="gemini-2.0-flash-exp",
-            contents=[types.Content(parts=[types.Part(text=prompt)])],
-            config=types.GenerateContentConfig(
-                response_mime_type="application/json"
-            )
-        )
-        
-        kb_content = response.text
-        
-        # 4. Save Output
-        # Verify JSON
+    
+    import time
+    import random
+    
+    kb_content = None
+    max_retries = 5
+    
+    for attempt in range(max_retries):
         try:
-            parsed_kb = json.loads(kb_content)
-            output_file = base_path / "knowledge_base.json"
-            with open(output_file, 'w') as f:
-                json.dump(parsed_kb, f, indent=2)
-            print(f"✅ Knowledge Base saved to {output_file}")
+            response = client.models.generate_content(
+                model="gemini-2.0-flash-exp",
+                contents=[types.Content(parts=[types.Part(text=prompt)])],
+                config=types.GenerateContentConfig(
+                    response_mime_type="application/json"
+                )
+            )
             
-            # Print summary
-            print("\n----- EXTRACTION SUMMARY -----")
-            print(f"Business: {parsed_kb.get('business_info', {}).get('name')}")
-            print(f"Total Q&A Pairs: {len(parsed_kb.get('qa_pairs', []))}")
-            print("------------------------------")
+            kb_content = response.text
+            break # Success!
             
-        except json.JSONDecodeError:
-            print("❌ Error: Gemini output was not valid JSON.")
-            print("Raw Output:", kb_content)
+        except Exception as e:
+            error_str = str(e)
+            if attempt < max_retries - 1:
+                if "429" in error_str:
+                     wait_time = 30 + (attempt * 10) # 30s, 40s, 50s...
+                     print(f"⚠️ Gemini Quota Exceeded (Attempt {attempt+1}/{max_retries}). Cooling down for {wait_time}s...")
+                else:
+                    wait_time = (2 ** attempt) + random.uniform(0, 1)
+                    print(f"⚠️ Gemini API Error (Attempt {attempt+1}/{max_retries}): {e}. Retrying in {wait_time:.1f}s...")
+                
+                time.sleep(wait_time)
+            else:
+                print(f"❌ Gemini API Failed after {max_retries} attempts: {e}")
+                return
 
+    if not kb_content:
+        return
+
+    # 4. Save Output
+    try:
+        parsed_kb = json.loads(kb_content)
+        output_file = base_path / "knowledge_base.json"
+        with open(output_file, 'w') as f:
+            json.dump(parsed_kb, f, indent=2)
+        print(f"✅ Knowledge Base saved to {output_file}")
+        
+        # Print summary
+        print("\n----- EXTRACTION SUMMARY -----")
+        print(f"Business: {parsed_kb.get('business_info', {}).get('name')}")
+        print(f"Total Q&A Pairs: {len(parsed_kb.get('qa_pairs', []))}")
+        print("------------------------------")
+        
+    except json.JSONDecodeError:
+        print("❌ Error: Gemini output was not valid JSON.")
+        print("Raw Output:", kb_content)
     except Exception as e:
-        print(f"❌ Gemini API Error: {e}")
+         print(f"❌ Error saving/parsing KB: {e}")
 
 if __name__ == "__main__":
     extract_knowledge_base()

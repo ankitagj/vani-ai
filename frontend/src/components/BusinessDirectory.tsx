@@ -17,7 +17,7 @@ const BusinessDirectory: React.FC<BusinessDirectoryProps> = ({ onSelect, onRegis
     const [loading, setLoading] = useState(true);
 
     useEffect(() => {
-        fetch('http://localhost:5001/businesses')
+        fetch('http://localhost:5002/businesses')
             .then(res => res.json())
             .then(data => {
                 setBusinesses(data);
@@ -33,7 +33,7 @@ const BusinessDirectory: React.FC<BusinessDirectoryProps> = ({ onSelect, onRegis
 
     return (
         <div className="container text-center" style={{ marginTop: '2rem' }}>
-            <h1>🏢 Business Directory</h1>
+            <h1>🏢 Vani.ai Directory</h1>
             <p style={{ color: 'var(--text-secondary)' }}>Select a business to chat with its AI Agent.</p>
 
             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: '20px', marginTop: '30px', justifyContent: 'center', maxWidth: '1000px', margin: '30px auto' }}>

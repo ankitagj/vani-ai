@@ -1,0 +1,54 @@
+{
+  "business_info": {
+    "name": "Rainbow Scooty/Driving School",
+    "owner": "Priya (mentioned as staff)",
+    "phone": "Not explicitly mentioned, but customers call to this business",
+    "address": "Near KB Kalyana Mantapa, Karneshwar Nagar, Gulbarga. Near Hanuman Temple and Royal Store. Opposite Rainbow Paradise Building. Google Maps location available.",
+    "services": [
+      "Two-wheeler driving training (scooty)",
+      "License assistance through a third party"
+    ]
+  },
+  "qa_pairs": [
+    {
+      "category": "Pricing",
+      "question": "What are the fees/pricing details?",
+      "answer": "The fee is \u20b92600 for a 10-day course, which includes the bike and petrol. License is not included in the fee as it is handled online. The license for two-wheelers (learning with permanent) is \u20b93000 through a third party. License for both two and four-wheelers is \u20b95000 through a third party."
+    },
+    {
+      "category": "Location & Directions",
+      "question": "Where is the school located?",
+      "answer": "The school is located in Karneshwar Nagar, near KB Kalyana Mantapa in Gulbarga. It is near the Hanuman Temple and opposite the Royal store. The building is called Rainbow Paradise. The Google Maps location is also available."
+    },
+    {
+      "category": "Scheduling & Timings",
+      "question": "What are the operating hours/timings for classes?",
+      "answer": "The classes are open from 9:30 AM to 6:30 PM. Sunday is a holiday. Customers can come anytime during operating hours."
+    },
+    {
+      "category": "Course Details",
+      "question": "What does the course entail?",
+      "answer": "The course is 10 days long, and they teach from basic to advanced levels. The course duration depends on the individual's learning pace and rounds of practice. The school provides the vehicle and petrol. A passport-size photo is required for admission. Walking shoes are recommended."
+    },
+    {
+      "category": "Teaching Methodology",
+      "question": "How do you teach/What is your teaching method?",
+      "answer": "They provide basic training and adjust the teaching based on the student's progress. They do not sit behind the student while teaching; they run alongside. Parents are welcome to accompany the student. After training the student can practice in their own vehicle."
+    },
+    {
+      "category": "Staff",
+      "question": "Are there female instructors?",
+      "answer": "Yes, a female instructor is available."
+    },
+    {
+      "category": "License",
+      "question": "Do you provide a license?",
+      "answer": "The school does not directly provide licenses, but they can help arrange it through a contact who handles licenses online. It costs extra."
+    },
+    {
+      "category": "Admission",
+      "question": "What are the requirements for admission?",
+      "answer": "A passport-size photo is required. The first payment is \u20b91100, with the remaining amount due after three days."
+    }
+  ]
+}

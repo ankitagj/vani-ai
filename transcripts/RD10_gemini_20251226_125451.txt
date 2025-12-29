@@ -1,0 +1,68 @@
+Transcription Service: gemini
+Detected Language: unknown
+Source Language: auto
+Translated to: English
+Timestamp: 2025-12-26T12:54:51.376287
+
+==================================================
+
+TRANSCRIPT (English):
+--------------------------------------------------
+Speaker 1: Hello.
+Speaker 2: Hello remake.
+Speaker 1: Say yes.
+Speaker 2: Scooty next to the training Elladri madam?
+Speaker 1: Madam Houdri.
+Speaker 2: Where are you from?
+Speaker 1: Namdu Karaneshwar Bartadri.
+Speaker 2: Ellery?
+Speaker 1: Near KB Kalyan Mandapa Karaneshwar Nagar.
+Speaker 2: Karaneshwar Nagar Ri.
+Speaker 1: Ha G. No. Our sister is Hontarri now. Whose tagolalari Karkonde come.
+Speaker 1: Madam. Ha ha
+Speaker 2: Wow. Nodri madam who did not put the location near google.
+Speaker 1: Location is Hokkidare. There is a location like Rainbow Driving School on Google. There is a temple of Lord Hanuman in the city of Karaneshwar.
+Speaker 2: Ha ha.
+Speaker 1: There it is.
+Speaker 2: Well, well. Hmm. Ekkuwak Hokidri. I have to see how much is the fee madam. Thank you madam. Hello? fly away
+Speaker 2: How much is the fee? 2600 as fee.
+Speaker 1: 2600
+Speaker 1: 2600 fee. A passport size photograph is required.
+Speaker 2: Ha ha.
+Speaker 1: Ha. Chose Chose. Hmm. Ten days the class is there.
+Speaker 2: This is Tori Madam.
+Speaker 1: Ok madam, I need a photo. Tell them to wear passport size walking shoes. Explain everything. Chalo anistu andre admission madisri ha.
+Speaker 2: Ha Aytri Aytri.
+Speaker 1: Ok madam ok.
+Speaker 2: Thank you.
+
+==================================================
+ORIGINAL TRANSCRIPT:
+--------------------------------------------------
+Speaker 1: ಹಲೋ.
+Speaker 2: ಹಲೋ ರೆಮೇಕ್.
+Speaker 1: ಹಾ ಹೇಳಿ.
+Speaker 2: ಸ್ಕೂಟಿ ನೆಕ್ಸ ದು ಟ್ರೈನಿಂಗ್ ಎಲ್ಲದ್ರಿ ಮೇಡಮ್?
+Speaker 1: ಹೌದ್ರಿ ಮೇಡಮ್.
+Speaker 2: ಎಲ್ಲಿ ಬರ್ತದ್ರಿ ನಿಮ್ದು?
+Speaker 1: ನಮ್ದು ಕರಣೇಶ್ವರ ಬರ್ತದ್ರಿ.
+Speaker 2: ಎಲ್ರಿ?
+Speaker 1: ನಿಯರ್ ಕೆ ಬಿ ಕಲ್ಯಾಣ ಮಂಟಪ ಕರಣೇಶ್ವರ ನಗರ್.
+Speaker 2: ಕರಣೇಶ್ವರ ನಗರ್ ರಿ.
+Speaker 1: ಹಾ ಜಿ. ಇಲ್ಲ. ನಮ್ಮ ತಂಗಿಯವರು ಹೊಂಟಾರ್ರಿ ಈಗ. ಹಾ ಯಾರ ತಗೋಳಲ್ಲರಿ ಕರ್ಕೊಂಡು ಬನ್ರಿ.
+Speaker 1: ಮೇಡಮ್. ಹಾ ಹಾ.
+Speaker 2: ಅಚ್ಚಾ. ನಿಯರ್ ಗೂಗಲ್ ದಾಗ ಲೊಕೇಶನ್ ಹಾಕಿದದ ನೋಡ್ರಿ ಮೇಡಮ್.
+Speaker 1: ಲೊಕೇಶನ್ ಹಾಕಿದಾರೆ. ಗೂಗಲ್ ದಾಗ ರೇನ್ಬೋ ಡ್ರೈವಿಂಗ್ ಸ್ಕೂಲ್ ಅಂತ ಲೊಕೇಶನ್ ಇದೆ. ಕರಣೇಶ್ವರ ನಗರದಲ್ಲಿ ಹನುಮಾನ್ ದೇವರ ಗುಡಿ ಅದರಿ.
+Speaker 2: ಹಾ ಹಾ.
+Speaker 1: ಅಲ್ಲಿ ಅದರಿ ನಮ್ದು.
+Speaker 2: ಆಯ್ತು ಆಯ್ತು. ಹ್ಮ್. ಎಕ್ಕುವಾಕ್ ಹಾಕಿದ್ರಿ. ಮೇಡಮ್ ಫೀಸ್ ಎಷ್ಟದ್ರಿ ಅಂತ ನೋಡಬೇಕಾಗ್ತದೆ ಥ್ಯಾಂಕ್ ಯು ಮೇಡಮ್. ಹಲೋ? ಹಾರಿ.
+Speaker 2: ಫೀಸ್ ಎಷ್ಟದರಿ? 2600 ಫೀಸ್ ಅದರಿ.
+Speaker 1: 2600
+Speaker 1: 2600 ಫೀಸ್ ಅದರಿ. ಒಂದು ಪಾಸ್ಪೋರ್ಟ್ ಸೈಜ್ ಫೋಟೋ ಬೇಕ್ರಿ.
+Speaker 2: ಹಾ ಹಾ.
+Speaker 1: ಹಾ. ಆಯ್ತು ಆಯ್ತು. ಹ್ಮ್. ಟೆನ್ ಡೇಸ್ ದು ಕ್ಲಾಸ್ ಅದರಿ.
+Speaker 2: ಈ ಬರ್ತಾರೆ ತೋರಿ ಮೇಡಮ್.
+Speaker 1: ಓಕೆ ಮೇಡಮ್ ಒಂದು ಫೋಟೋ ಬೇಕು ನೋಡ್ರಿ. ಪಾಸ್ಪೋರ್ಟ್ ಸೈಜ್ ವಾಕಿಂಗ್ ಶೂಸ್ ಇದ್ರೆ ಹಾಕೊಂಡು ಬರಲಿಕ್ಕೆ ಹೇಳ್ರಿ. ಎಲ್ಲಾ ಎಕ್ಸ್ಪ್ಲೈನ್ ಮಾಡ್ತೀನಿ. ಚಲೋ ಅನಿಸ್ತು ಅಂದ್ರೆ ಅಡ್ಮಿಷನ್ ಮಾಡಿಸ್ರಿ ಹಾ.
+Speaker 2: ಹಾ ಆಯ್ತ್ರಿ ಆಯ್ತ್ರಿ.
+Speaker 1: ಓಕೆ ಮೇಡಮ್ ಓಕೆ.
+Speaker 2: ಥ್ಯಾಂಕ್ಯು.

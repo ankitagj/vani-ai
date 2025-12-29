@@ -1,0 +1,68 @@
+Transcription Service: gemini
+Detected Language: unknown
+Source Language: auto
+Translated to: English
+Timestamp: 2025-12-24T22:07:11.426149
+
+==================================================
+
+TRANSCRIPT (English):
+--------------------------------------------------
+Speaker 1: Hello.
+Speaker 2: Hello? Ha sir, Good Morning.
+Speaker 3: sir Good Morning.
+Speaker 2: Ha don't you say
+Speaker 3: madam There Scooty send it Rainbow.
+Speaker 2: fly away I am are you don't tell sir
+Speaker 3: madam Same one our householder There are Guys, stay madam There Office Agri.
+Speaker 2: Ha Office is below above the house There is
+Speaker 2: That sunday today today will you come
+Speaker 3: today today Holiday will be madam sunday sunday Holiday will be
+Speaker 2: sunday Holiday There is Actually, on Money is above below Office there is you Bertira andre to me Na all Explain do you Call do Berry.
+Speaker 3: Now Now come on came walk madam Now.
+Speaker 2: how much come on sir
+Speaker 3: one 15 in minutes come on madam address Correct there Hogri.
+Speaker 2: Google There location has put Nodri near KB Welfare Hall There Karaneshwar There is
+Speaker 3: K B Welfare In the pavilion There is Anri?
+Speaker 2: Ha Karaneshwar the city andre K B near Annakatini
+Speaker 3: Ha ha
+Speaker 2: That's it Royal shop is Nodri big
+Speaker 3: Ha Ha Ha Ri.
+Speaker 2: its Opposite Rainbow Paradise Building there is There on Office There is to the bottom
+Speaker 3: ok
+Speaker 3: Eq min let's hear
+Speaker 3: today Free if beauty No Again tomorrow come on andre tomorrow Must walk.
+Speaker 2: No Now you Afternoon Call do Bertira andre Burley No Evening Call modri, No tomorrow Morning 9:30 to From here we are Open There is my Office.
+Speaker 3: ok madam ok
+Speaker 2: Ha ok sir ok hello
+
+==================================================
+ORIGINAL TRANSCRIPT:
+--------------------------------------------------
+Speaker 1: Hello.
+Speaker 2: ಹಲೋ? ಹಾ ಸರ್, ಗುಡ್ ಮಾರ್ನಿಂಗ್.
+Speaker 3: ಸರ್ ಗುಡ್ ಮಾರ್ನಿಂಗ್.
+Speaker 2: ಹಾ ಹೇಳ್ರಿ?
+Speaker 3: ಮೇಡಂ ಅಲ್ಲಿ ಸ್ಕೂಟಿ ಕಳಿಸಿರ್ತೀರಿ ರೇನ್ಬೋರಿ.
+Speaker 2: ಹಾರಿ ನಾನೇ ಇದ್ದೀನಿ, ಹೇಳ್ರಿ ಸರ್.
+Speaker 3: ಮೇಡಂ ಅದೇ ಒಂದು ನಮ್ಮ ಮನೆಯನವರು ಇದ್ದಾರೆ ಬಳಗರು, ಇರ್ತೀರಿ ಮೇಡಂ ಅಲ್ಲಿ ಆಫೀಸ್ ಆಗ್ರಿ.
+Speaker 2: ಹಾ ಆಫೀಸ್ ಕೆಳಗಿದೆ ಮೇಲೆ ಮನೆ ಇದೆ.
+Speaker 2: ಆ ಸಂಡೆ ಇವತ್ತು ಇವತ್ತು ಬರ್ತೀರಾ?
+Speaker 3: ಇವತ್ತು ಇವತ್ತು ಹಾಲಿಡೇ ಇರುತ್ತೆ ಮೇಡಂ ಸಂಡೆ ಸಂಡೆ ಹಾಲಿಡೇ ಇರುತ್ತೆ.
+Speaker 2: ಸಂಡೆ ಹಾಲಿಡೇ ಇದೆ ಆಕ್ಚುಲಿ, ನಂದು ಮನಿ ಮೇಲಿದೆ ತೆಳಗೆ ಆಫೀಸ್ ಇದೆ, ನೀವು ಬರ್ತೀರಾ ಅಂದ್ರೆ ನನಗೆ ನಾ ಎಲ್ಲ ಎಕ್ಸ್ಪ್ಲೈನ್ ಮಾಡ್ತೀನಿ, ಕಾಲ್ ಮಾಡಿ ಬರ್ರಿ.
+Speaker 3: ಈಗ ಈಗ ಬರ್ತೀರಿ ಬಂದ ನಡೀತ ಮೇಡಂ ಈಗ.
+Speaker 2: ಎಷ್ಟೊತ್ತನ ಬರ್ತೀರಿ ಸರ್.
+Speaker 3: ಒಂದು 15 ನಿಮಿಷದಲ್ಲಿ ಬರ್ತೀರಿ ಮೇಡಂ ಅಡ್ರೆಸ್ ಕರೆಕ್ಟ್ ಅಲ್ಲೇ ಹೋಗ್ರಿ.
+Speaker 2: ಗೂಗಲ್ ಅಲ್ಲಿ ಲೊಕೇಶನ್ ಹಾಕಿದ್ದಾಗೆ ನೋಡ್ರಿ ನಿಯರ್ ಕೆಬಿ ಕಲ್ಯಾಣ ಮಂಟಪ ಅಲ್ಲಿ ಕರಣೇಶ್ವರ ಇದೆ.
+Speaker 3: ಕೆ ಬಿ ಕಲ್ಯಾಣ ಮಂಟಪದಲ್ಲಿ ಇದೆ ಅನ್ರಿ?
+Speaker 2: ಹಾ ಕರಣೇಶ್ವರ ನಗರ ಅಂದ್ರೆ ಕೆ ಬಿ ನಿಯರ್ ಅನ್ನಾಕತ್ತೀನಿ.
+Speaker 3: ಹಾ ಹಾ.
+Speaker 2: ಅದು ರಾಯಲ್ ಅಂಗಡಿ ಆಗಿದೆ ನೋಡ್ರಿ ದೊಡ್ಡದು.
+Speaker 3: ಹಾ ಹಾ ಹಾ ರಿ.
+Speaker 2: ಅದರ ಎದುರುಗಡೆ ರೇನ್ಬೋ ಪ್ಯಾರಡೈಸ್ ಬಿಲ್ಡಿಂಗ್ ಇದೆ, ಅಲ್ಲಿ ನಂದು ಆಫೀಸ್ ಇದೆ ತಳಗೆ.
+Speaker 3: ಓಕೆ.
+Speaker 3: ಏಕ್ ನಿಮಿಷ ಕೇಳೋಣು.
+Speaker 3: ಇವತ್ತು ಫ್ರೀ ಇದ್ರೆ ಬರ್ತೀವಿ ಇಲ್ಲಾಂದ್ರೆ ಮತ್ತೆ ನಾಳೆ ಬಾ ಅಂದ್ರೆ ನಾಳೆ ನಡೀಬೇಕು.
+Speaker 2: ಇಲ್ಲ ಈಗ ನೀವು ಆಫ್ಟರ್ನೂನ್ ಕಾಲ್ ಮಾಡಿ ಬರ್ತೀರಾ ಅಂದ್ರೆ ಬರ್ಲಿ ಇಲ್ಲಾಂದ್ರೆ ಈವಿನಿಂಗ್ ಕಾಲ್ ಮಾಡ್ರಿ, ಇಲ್ಲಾಂದ್ರೆ ನಾಳೆಗೆರೆ ಮಾರ್ನಿಂಗ್ 9:30 ಗೆ ಇಲ್ಲಿಂದ ನಾವು ಓಪನ್ ಇದೆ ನನ್ನ ಆಫೀಸ್.
+Speaker 3: ಓಕೆ ಮೇಡಂ ಓಕೆ.
+Speaker 2: ಹಾ ಓಕೆ ಸರ್ ಓಕೆ ನಮಸ್ಕಾರ.

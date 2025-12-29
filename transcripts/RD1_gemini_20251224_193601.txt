@@ -1,0 +1,70 @@
+Transcription Service: gemini
+Detected Language: unknown
+Source Language: auto
+Translated to: English
+Timestamp: 2025-12-24T19:36:01.553882
+
+==================================================
+
+TRANSCRIPT (English):
+--------------------------------------------------
+hello
+hello
+Ha sir good morning.
+Sir good morning.
+Say yes.
+Rainbow is taught by Madam Scooty.
+Go ahead and say it's me, sir.
+Ok, madam, there are Monnenoru, Belgaum, otherwise, madam, go to the office there.
+There is a house above the office.
+Will Sunday come today?
+Today is a holiday today madam Sunday Sunday is a holiday.
+It is a Sunday holiday, actually our house is upstairs and there is an office downstairs.
+Now now Bertiri Bandre Nadita madam now?
+What time will you come sir?
+Come today in 15 minutes madam and tell me the correct address.
+Google has put the location as Nodri near KB Kalyan Mantapa where Karaneshwar Nagar is located.
+Is this the case in KB Kalyan Mandap?
+Ha Karaneshwar Nagar Andre KB Near Annakattini.
+Ha ha that's a royal store nodry is big.
+Ha ha ha ha re.
+Opposite it is the Rainbow Paradise Building where Nandu's office is located below.
+ok
+Madam Baralikkagolla will walk to the dog today.
+ha
+Today's free Idre Bertiri Elandre again tomorrow tomorrow Bandre tomorrow Nadabari.
+No, now you call me in the afternoon and you will get it. No, no. No. No. No. No. No. No. No. No. No. No. No. No. No. No. No. No. No. No. No. No. No. No. No. No. No. No. No. No. No. No. No. No. No. Andre.
+Ok ma'am ok.
+ok sir hello
+
+==================================================
+ORIGINAL TRANSCRIPT:
+--------------------------------------------------
+ಹಲೋ
+ಹಲೋ
+ಹಾ ಸರ್ ಗುಡ್ ಮಾರ್ನಿಂಗ್.
+ಸರ್ ಗುಡ್ ಮಾರ್ನಿಂಗ್.
+ಹಾ ಹೇಳ್ರಿ.
+ಮೇಡಂ ಸ್ಕೂಟಿಯಲ್ಲಿ ಕಲಿಸಿರ್ತಾರೆ ರೈನ್ಬೋರೀ.
+ಹಾರಿ ನಾನೇ ಇದ್ದೀನಿ ಹೇಳ್ರಿ ಸರ್.
+ಸರಿ ಆಯ್ತು ಮೇಡಂ ಅದೇರೀ ಮೊನ್ನೆನೋರು ಇದ್ದಾರೆ ಬೆಳಗಾವ್ ಇದ್ದಾರೆ ಈತರಿ ಮೇಡಂ ಅಲ್ಲಿ ಆಫೀಸಿಗೆ ಹೋಗ್ರಿ.
+ಹ ಆಫೀಸ್ ತೆಳಗಿದೆ ಮೇಲೆ ಮನೆ ಇದೆ.
+ಸಂಡೆ ಇವತ್ತು ಇವತ್ತು ಬರ್ತೀರಾ?
+ಇವತ್ತು ಇವತ್ತು ಹಾಲಿಡೇ ಇರ್ತದೆ ಮೇಡಂ ಸಂಡೆ ಸಂಡೆ ಹಾಲಿಡೇ ಇರ್ತದೆ.
+ಸಂಡೇ ಹಾಲಿಡೇ ಇದೆ ಆಕ್ಚುವಲಿ ನಮ್ದು ಮನೆ ಮೇಲಿದೆ ಕೆಳಗೆ ಆಫೀಸ್ ಇದೆ ನೀವು ಬರ್ತೀರಾ ಅಂದ್ರೆ ನನಗೆ ನಾ ಎಲ್ಲಾ ಎಕ್ಸ್ಪ್ಲೈನ್ ಮಾಡ್ತೀನಿ ಕಾಲ್ ಮಾಡೇ ಬರ್ರಿ.
+ಈಗ ಈಗ ಬರ್ತೀರಿ ಬಂದ್ರೆ ನಡೀತಾ ಮೇಡಂ ಈಗ?
+ಎಷ್ಟು ಹೊತ್ತಿಗೆ ಬರ್ತೀರಿ ಸರ್.
+ಇವತ್ತು 15 ನಿಮಿಷದಲ್ಲಿ ಬರ್ತೀರಿ ಮೇಡಂ ಅಡ್ರೆಸ್ ಕರೆಕ್ಟಾಗಿ ಹೇಳ್ರಿ.
+ಗೂಗಲ್ನಲ್ಲಿ ಲೊಕೇಶನ್ ಹಾಕಿದ್ದಾಗೆ ನೋಡ್ರಿ ನಿಯರ್ ಕೆಬಿ ಕಲ್ಯಾಣ ಮಂಟಪ ಅಲ್ಲಿ ಕರಣೀಶ್ವರ ನಗರ ಇದೆ.
+ಕೆಬಿ ಕಲ್ಯಾಣ ಮಂಟಪದಲ್ಲಿ ಇದೇನ್ರಿ?
+ಹಾ ಕರಣೇಶ್ವರ ನಗರ ಅಂದ್ರೆ ಕೆಬಿ ನಿಯರ್ ಅನ್ನಾಕತ್ತೀನಿ.
+ಹ ಹಾ ಅದು ರಾಯಲ್ ಅಂಗಡಿ ಆಗಿದೆ ನೋಡ್ರಿ ದೊಡ್ಡದು.
+ಹಾ ಹಾ ಹಾ ಹಾ ರೀ.
+ಅದರ ಎದುರುಗಡೆ ರೈನ್ಬೋ ಪ್ಯಾರಡೈಸ್ ಬಿಲ್ಡಿಂಗ್ ಇದೆ ಅಲ್ಲಿ ನಂದು ಆಫೀಸ್ ಇದೆ ತೆಳಗೆ.
+ಓಕೆ.
+ಇವತ್ತು ಬರಲಿಕ್ಕಾಗೊಲ್ಲ ಮೇಡಂ ನಾಯಿಗೆ ನಡೆದು ಬರುವರಿ.
+ಹಾ.
+ಇವತ್ತಿನ ಫ್ರೀ ಇದ್ರೆ ಬರ್ತೀರಿ ಇಲ್ಲಾಂದ್ರೆ ಮತ್ತೆ ನಾಳೆ ನಾಳೆದು ಬಂದ್ರೆ ನಾಳೆ ನಡಬರಿ.
+ಇಲ್ಲ ಈಗ ನೀವು ಆಫ್ಟರ್ನೂನ್ ಕಾಲ್ ಮಾಡಿ ಬರ್ತೀರಿ ಅಂದ್ರೆ ಬರ್ಲಿ ಇಲ್ಲ ಅಂದ್ರೆ ಈವನಿಂಗ್ ಕಾಲ್ ಮಾಡ್ರಿ ಇಲ್ಲ ಅಂದ್ರೆ ನಾಳೆಗೆ ಮಾರನಿಂಗ್ 9:30 ಗೆ ಇಲ್ಲಿಂದ ನಾವು ಓಪನ್ ಇದೆ ನನ್ ಆಫೀಸ್.
+ಓಕೆ ಮೇಡಂ ಓಕೆ.
+ಓಕೆ ಸರ್ ನಮಸ್ಕಾರ.

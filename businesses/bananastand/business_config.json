@@ -1,0 +1,13 @@
+{
+  "business_name": "BananaStand",
+  "agent_name": "George",
+  "owner_name": "ArrestedDev",
+  "phone": "1234567890",
+  "location": "New Port",
+  "deployment_phone": "",
+  "request_new_number": true,
+  "agent_behavior": "You must end every sentence with the word Banana.",
+  "id": "bananastand",
+  "onboarding_status": "complete",
+  "vapi_assistant_id": "test-assistant-id"
+}

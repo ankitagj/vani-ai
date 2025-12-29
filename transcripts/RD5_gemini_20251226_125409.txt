@@ -1,0 +1,64 @@
+Transcription Service: gemini
+Detected Language: unknown
+Source Language: auto
+Translated to: English
+Timestamp: 2025-12-26T12:54:09.592731
+
+==================================================
+
+TRANSCRIPT (English):
+--------------------------------------------------
+Speaker 1: Hello!
+Speaker 2: Yes Madam!
+Speaker 1: Ring Road Driving Class?
+Speaker 2: Haw haw too.
+Speaker 1: You were saying so, what is your address?
+Speaker 2: Karneshwar Nagar. Where are you talking from?
+Speaker 1: Tipu Chowk.
+Speaker 2: Where does Tipu Chowk come from, madam?
+Speaker 1: Near the Dargah?
+Speaker 2: Yes, no Ring Road. Yes, from Ring Road, from Ring Road you have to go to Jewargi Cross, Jewargi Cross, isn't it, Jewargi Cross which goes to the bus stand?
+Speaker 1: Yes.
+Speaker 2: Have to come there. Beyond that there will be a path leading to Ram temple. Will come to Karneshwar Nagar, our class is there. Location has to be entered on Google, on Google.
+Speaker 1: Isn't it near here?
+Speaker 2: No madam, people come here from Shahabada Wadi. This is so close, you feel as if you are far away. If you come from outside, come straight to Ram temple. Ram temple comes from Kharge petrol pump, right?
+Speaker 1: Hmm.
+Speaker 2: Can come from there also. From 9:30 in the morning to 6:30 in the evening. Continuous batches. You decide what timing you want.
+Speaker 1: From 6:30 in the morning?
+Speaker 2: No no, our classes start at 9:30 in the morning.
+Speaker 1: Okay from 9:30.
+Speaker 2: Yes.
+Speaker 1: And what is the fee?
+Speaker 2: The fee is Rs 2600. It is a 10 day course. The car remains ours, the petrol also remains ours.
+Speaker 1: Okay sir.
+Speaker 1: Okay ma'am, I'll call you.
+Speaker 2: Yes.
+
+==================================================
+ORIGINAL TRANSCRIPT:
+--------------------------------------------------
+Speaker 1: हॅलो!
+Speaker 2: हा मॅडम!
+Speaker 1: रिंग रोड ड्रायव्हिंग क्लास है?
+Speaker 2: हाव हाव भी।
+Speaker 1: आप कह रहे थे सो अड्रेस क्या है आप?
+Speaker 2: कर्णेश्वर नगर। आप कहां से बात कर रहे है?
+Speaker 1: टिपू चौक।
+Speaker 2: टिपू चौक कहां से कहां आता है मॅडम?
+Speaker 1: दरगाह के पास?
+Speaker 2: हां, नहीं रिंग रोड। हां, रिंग रोड से रिंग रोड से आपको जेवरगी क्रॉस के पास, जेवरगी क्रॉस है ना, बस स्टॅंड जानेवाला जेवरगी क्रॉस?
+Speaker 1: हां।
+Speaker 2: वहां तक आना है। उसके आगे राम मंदिर जानेवाला एक रास्ता आएगा। कर्णेश्वर नगर आएगा, वहां पे है हमारा क्लास। गुगल पे लोकेशन डालेवा है, गुगल पे।
+Speaker 1: यहां ना नजदीक में नहीं है क्या?
+Speaker 2: नहीं है मॅडम, यहां पे लोग शहाबादा वाडी से आते है। ये नजदीकी है, आपको लग रहा है दूर एक बार आएंगे तो। आप बाहर से आए तो राम मंदिर आ जाईए सीधा। खरगे पेट्रोल पंप से राम मंदिर आता है ना?
+Speaker 1: हम्।
+Speaker 2: वहां से भी आ सकते है। सबेरे 9:30 से इव्हिनिंग 6:30 तक। कन्टिन्यू बॅचेस है। आपको कौनसा टायमिंग चाहिए आप डिसाईड कर लो।
+Speaker 1: सबेरे 6:30 से?
+Speaker 2: नहीं नहीं अरे सवेरे 9:30 से क्लासेस चालु हो जाते है हमारे।
+Speaker 1: अच्छा 9:30 से।
+Speaker 2: जी जी।
+Speaker 1: और फीस क्या है?
+Speaker 2: 2600 फीस है। 10 दिन का कोर्स है। गाडी हमारी रहती है, पेट्रोल भी हमारा रहता है।
+Speaker 1: अच्छा जी।
+Speaker 1: ओके मॅम, मैं आपको कॉल करती हूं।
+Speaker 2: जी जी।

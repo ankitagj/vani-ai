@@ -1,15 +1,15 @@
-# Rainbow Driving School - Conversational AI Agent
+# Vani.ai - AI Customer Service Platform
 
-A multilingual customer service agent powered by Google Gemini AI for Rainbow Driving School.
+A white-label AI customer service platform capable of handling voice, SMS, and multilingual conversations. Originally built for Rainbow Driving School, now a general-purpose solution.
 
 ## 🌟 Features
 
-- **Multilingual Support**: Handles Hindi and English conversations naturally
+- **Multilingual Support**: Handles Hindi, English, and local dialects naturally
 - **Voice Interface**: ElevenLabs Scribe for speech-to-text and TTS for responses
 - **Lead Capture**: Automatically extracts customer name, phone number, and conversation summary
 - **Smart Classification**: Categorizes leads as HOT_LEAD, GENERAL_INQUIRY, SPAM, or UNRELATED
-- **Knowledge Base**: Powered by real call recordings (RD1-RD10)
-- **Owner Dashboard**: View and manage captured leads
+- **Knowledge Base**: Powered by real call recordings or uploaded transients
+- **Vani.ai Dashboard**: View and manage captured leads and businesses
 
 ## 🏗️ Architecture
 

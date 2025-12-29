@@ -1,0 +1,10 @@
+{
+  "business_name": "TestBiz",
+  "agent_name": "TestAgent",
+  "owner_name": "TestOwner",
+  "phone": "555-0199",
+  "request_new_number": false,
+  "id": "testbiz",
+  "onboarding_status": "complete",
+  "elevenlabs_voice_id": "21m00Tcm4TlvDq8ikWAM"
+}

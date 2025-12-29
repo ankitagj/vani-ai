@@ -1,0 +1,29 @@
+Transcription Service: gemini
+Detected Language: unknown
+Source Language: en
+Translated to: English
+Timestamp: 2025-12-24T21:53:17.001976
+
+==================================================
+
+TRANSCRIPT (English):
+--------------------------------------------------
+Speaker 1: Helo
+Speaker 2: Hello.
+Speaker 2: ha Madam, eega Hanuman mandir koodi hatraa ideevi.
+Speaker 1: adu baajune Jagadevi angdi ada nodri avarige kelri Rainbow Apartment elli ada anta.
+Speaker 2: Howdru. Kiraana angdi adu nodri.
+Speaker 2: haa Jagadevi Apartment ri
+Speaker 1: Jagadevi kiraana
+Speaker 2: haa
+Speaker 1: Avaru Rainbow Apartment yedre adari?
+Speaker 2: Howdru, eega alle alle iddevi nodri madam, eega apartment yedre iddevi ri.
+Speaker 1: Olaga office, office elli ada nodri.
+Speaker 1: Alle, alle nindri, namma hudugige kalsitini.
+Speaker 2: sari, ella apartment gate hatrane iddevi ri.
+Speaker 1: Okay, Okay. Olaga office elli ada anta kelri yariginoo.
+Speaker 1: yaarnoo heltare.
+Speaker 2: ha
+Speaker 1: Olaga hogi kudri madam, sumne roli yake ninditiraa.
+Speaker 2: ha
+Speaker 1: ha ok ha

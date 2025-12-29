@@ -1,0 +1,56 @@
+Transcription Service: gemini
+Detected Language: unknown
+Source Language: auto
+Translated to: English
+Timestamp: 2025-12-26T12:53:53.389971
+
+==================================================
+
+TRANSCRIPT (English):
+--------------------------------------------------
+Speaker 1: Take it you are on the side Take it.
+Speaker 2: Hello.
+Speaker 1: Hello.
+Speaker 2: Hello.
+Speaker 3: see There If there is He is a little This is the name will happen No
+Speaker 2: Hello, balance outside That take a look
+Speaker 1: Hello.
+Speaker 4: This is Rainbow Driving School Next?
+Speaker 5: Houdry, come on inside
+Speaker 4: sir my name Priya Me tell me to me back Scooty was learning i am 18 Years Old.
+Speaker 5: Houdri without walking Berry.
+Speaker 4: That's it Timing That's all when That's it Me If you don't know come on There was
+Speaker 5: you when will you come
+Speaker 4: Morning our 9:30 to Class Open Get ready Evening 6:30 to Close Agtade.
+Speaker 4: Ha how much how much Hours his teach
+Speaker 4: Hello?
+Speaker 5: Ha Hello don't tell
+Speaker 5: Na Round above Depend There is madam Basic from you teach you Berry one Sarti come meet
+Speaker 4: ok tomorrow As long as come on the space are you
+Speaker 5: tomorrow From half past nine Six Cattle Always Berry.
+Speaker 4: ok ok madam Thank you U.
+
+==================================================
+ORIGINAL TRANSCRIPT:
+--------------------------------------------------
+Speaker 1: ತಗೋ ನಿನ್ ಕಡೆ ತಗೋ.
+Speaker 2: ಹೆಲೋ.
+Speaker 1: ಹೆಲೋ.
+Speaker 2: ಹೆಲೋ.
+Speaker 3: ನೋಡ ಅಲ್ಲಿ ಇದ್ದರೆ ಇವರು ಸ್ವಲ್ಪ ಇದು ಹೆಸರ ಆಗುತ್ತೆ ಇಲ್ಲ
+Speaker 2: ಹೆಲೋ, ಬಾಕಿ ಹೊರಗೆ ಅದ ನೋಡ್ಕೋ.
+Speaker 1: ಹೆಲೋ.
+Speaker 4: ಇದು ರೇನ್ಬೋ ಡ್ರೈವಿಂಗ್ ಸ್ಕೂಲ್ ಮುಂದೆ?
+Speaker 5: ಹೌದ್ರಿ, ಬನ್ನಿ ಒಳಗಡೆ.
+Speaker 4: ಸರ್ ನನ್ನ ಹೆಸರು ಪ್ರಿಯಾ ಅಂತ ಹೇಳಿ ನನಗೆ ಹಿಂಗೆ ಸ್ಕೂಟಿ ಕಲಿಯೋದಿತ್ತು ನಾನು 18 ಇಯರ್ಸ್ ಓಲ್ಡ್.
+Speaker 5: ಹೌದ್ರಿ ನಡೀತದೆ ಬರ್ರಿ.
+Speaker 4: ಅದು ಟೈಮಿಂಗ್ ಅದೆಲ್ಲ ಯಾವಾಗ ಅದು ಅಂತ ಗೊತ್ತಾಗದ್ರೆ ಚಲೋ ಇತ್ತು.
+Speaker 5: ನೀವು ಯಾವಾಗ ಬರ್ತೀರಿ?
+Speaker 4: ಮಾರ್ನಿಂಗ್ ನಮ್ದು 9:30 ಗೆ ಕ್ಲಾಸ್ ಓಪನ್ ಆಗ್ತದೆರಿ ಈವನಿಂಗ್ 6:30 ಗೆ ಕ್ಲೋಸ್ ಆಗ್ತದೆ.
+Speaker 4: ಹಾ ಎಷ್ಟು ಎಷ್ಟು ಅವರ್ಸ್ ತನ ಕಲಿಸ್ತೀರಿ.
+Speaker 4: ಹಲೋ?
+Speaker 5: ಹಾ ಹೆಲೋ ಹೇಳ್ರಿ.
+Speaker 5: ನಾ ರೌಂಡ್ ಮೇಲೆ ಡಿಪೆಂಡ್ ಇದೆ ಮೇಡಂ ಬೇಸಿಕ್ ಇಂದ ಕಲಿಸ್ತೀನಿ. ನೀವು ಬರ್ರಿ ಒಂದು ಸರ್ತಿ ಬಂದು ಭೇಟಿಯಾಗ್ರಿ.
+Speaker 4: ಸರಿ ನಾಳೆ ಎಷ್ಟೊತ್ತಿಗೆ ಬಾ ಅಂತೀರಿ ನೀವು?
+Speaker 5: ನಾಳೆ ಒಂಬತ್ತುವರೆಯಿಂದ ಆರು ದನ ಯಾವಾಗ್ಲೂ ಬರ್ರಿ.
+Speaker 4: ಸರಿ ಓಕೆ ಮೇಡಂ ಥ್ಯಾಂಕ್ ಯು.

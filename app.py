@@ -1,4 +1,4 @@
-from flask import Flask, request, jsonify
+from flask import Flask, request, jsonify, Response
 from flask_cors import CORS
 # from multilingual_customer_service_agent import MultilingualCustomerServiceAgent
 from query_transcripts import TranscriptQueryAgent
@@ -12,11 +12,361 @@ from leads_db import get_db
 
 # Load environment variables
 load_dotenv()
+from twilio.rest import Client
 
 # Initialize Flask app
 app = Flask(__name__)
 # Allow CORS for localhost:5173 specifically for cookie/auth if needed, or *
 CORS(app) 
+
+# Configuration
+app.config['MAX_CONTENT_LENGTH'] = 160 * 1024 * 1024 # 160MB Total Request limit (to allow 15 * 10MB files)
+# Note: Frontend limits individual files to 10MB. 15 files * 10MB = 150MB.
+
+# Public URL for the backend (Ngrok) - Update this if ngrok restarts!
+SERVER_URL = "https://postpyloric-limnological-danika.ngrok-free.dev"
+
+def provision_vapi_number(area_code='408'):
+    """Provision a new phone number via Vapi API"""
+    api_key = os.environ.get("VAPI_PRIVATE_KEY")
+    if not api_key:
+        logger.warning("VAPI_PRIVATE_KEY is missing. Cannot provision real number.")
+        return None
+        
+    try:
+        # Docs: POST https://api.vapi.ai/phone-number 
+        # Url is correct.
+        url = "https://api.vapi.ai/phone-number"
+        headers = {
+            "Authorization": f"Bearer {api_key}",
+            "Content-Type": "application/json"
+        }
+        payload = {
+            "provider": "vapi",
+            "numberDesiredAreaCode": area_code
+        }
+        
+        logger.info(f"Provisioning Vapi number with payload: {payload}")
+        response = requests.post(url, json=payload, headers=headers)
+        
+        if response.status_code in [200, 201]:
+            return response.json()
+        else:
+            logger.error(f"Vapi Provisioning Failed ({response.status_code}): {response.text}")
+            return None
+    except Exception as e:
+        logger.error(f"Error provisioning Vapi number: {e}")
+        return None
+
+def create_vapi_assistant(business_id, config):
+    """Create a Vapi Assistant configured for this business"""
+    api_key = os.environ.get("VAPI_PRIVATE_KEY")
+    if not api_key: return None
+    
+    agent_name = config.get('agent_name', 'Agent')
+    biz_name = config.get('business_name', 'Business')
+    voice_id = config.get('elevenlabs_voice_id', '21m00Tcm4TlvDq8ikWAM') # Default Rachel
+    
+    # Construct Server URL with business_id parameter
+    # e.g. https://.../vapi/chat/completions?business_id=xyz
+    # Vapi sends this to us, so we know which business context to load.
+    server_url = f"{SERVER_URL}/vapi/chat/completions?business_id={business_id}"
+    
+    vapi_name = f"{agent_name} - {biz_name}"
+    if len(vapi_name) > 40:
+        vapi_name = vapi_name[:40]
+
+    payload = {
+        "name": vapi_name,
+        "voice": {
+            "provider": "11labs",
+            "voiceId": voice_id,
+        },
+        "model": {
+            "provider": "custom-llm",
+            "model": "gpt-3.5-turbo", # Required placeholder by Vapi
+            "url": server_url,
+            "messages": [
+                {
+                    "content": f"You are {agent_name}. Act as a customer service agent.",
+                    "role": "system"
+                }
+            ]
+        },
+        "transcriber": {
+            "provider": "deepgram",
+            "model": "nova-2",
+            "language": "en" # Changed to English as requested
+        },
+        "serverUrl": f"{SERVER_URL}/vapi/webhook",  # CRITICAL: Destination for end-of-call-report
+        "serverMessages": ["end-of-call-report"], 
+        "firstMessage": f"Namaste! This is {agent_name} calling from {biz_name}. How can I help you today?"
+    }
+    
+    try:
+        url = "https://api.vapi.ai/assistant"
+        headers = {"Authorization": f"Bearer {api_key}", "Content-Type": "application/json"}
+        response = requests.post(url, json=payload, headers=headers)
+        if response.status_code in [200, 201]:
+            return response.json()
+        else:
+            logger.error(f"Failed to create assistant: {response.text}")
+            return None
+    except Exception as e:
+        logger.error(f"Error creating assistant: {e}")
+        return None
+
+def update_vapi_assistant(assistant_id, business_id, config):
+    """Update an existing Vapi Assistant"""
+    api_key = os.environ.get("VAPI_PRIVATE_KEY")
+    if not api_key: return None
+    
+    agent_name = config.get('agent_name', 'Agent')
+    biz_name = config.get('business_name', 'Business')
+    voice_id = config.get('elevenlabs_voice_id', '21m00Tcm4TlvDq8ikWAM')
+    
+    server_url = f"{SERVER_URL}/vapi/chat/completions?business_id={business_id}"
+    
+    vapi_name = f"{agent_name} - {biz_name}"
+    if len(vapi_name) > 40:
+        vapi_name = vapi_name[:40]
+
+    payload = {
+        "name": vapi_name,
+        "voice": {
+            "provider": "11labs",
+            "voiceId": voice_id,
+        },
+        "model": {
+            "provider": "custom-llm",
+            "model": "gpt-3.5-turbo",
+            "url": server_url,
+            "messages": [
+                {
+                    "content": f"You are {agent_name}. Act as a customer service agent.",
+                    "role": "system"
+                }
+            ]
+        },
+        "transcriber": {
+            "provider": "deepgram",
+            "model": "nova-2",
+            "language": "en"
+        },
+        "serverUrl": f"{SERVER_URL}/vapi/webhook",
+        "serverMessages": ["end-of-call-report"], 
+        "firstMessage": f"Namaste! This is {agent_name} calling from {biz_name}. How can I help you today?"
+    }
+    
+    try:
+        url = f"https://api.vapi.ai/assistant/{assistant_id}"
+        headers = {
+            "Authorization": f"Bearer {api_key}",
+            "Content-Type": "application/json"
+        }
+        logger.info(f"Updating Vapi Assistant {assistant_id}...")
+        response = requests.patch(url, json=payload, headers=headers)
+        
+        if response.status_code in [200, 201]:
+            return response.json()
+        else:
+            logger.error(f"Vapi Update Error ({response.status_code}): {response.text}")
+            return None
+    except Exception as e:
+        logger.error(f"Error updating Vapi assistant: {e}")
+        return None
+
+def bind_vapi_number(phone_id, assistant_id):
+    """Bind a phone number to an assistant"""
+    api_key = os.environ.get("VAPI_PRIVATE_KEY")
+    if not api_key: return False
+    
+    try:
+        url = f"https://api.vapi.ai/phone-number/{phone_id}"
+        headers = {"Authorization": f"Bearer {api_key}", "Content-Type": "application/json"}
+        payload = {"assistantId": assistant_id}
+        
+        response = requests.patch(url, json=payload, headers=headers)
+        return response.status_code in [200, 201]
+    except Exception as e:
+        logger.error(f"Error binding number: {e}")
+        return False
+
+def delete_vapi_object(resource_type, object_id):
+    """Delete a Vapi resource (assistant or phone-number)"""
+    api_key = os.environ.get("VAPI_PRIVATE_KEY")
+    if not api_key or not object_id: return False
+    
+    try:
+        url = f"https://api.vapi.ai/{resource_type}/{object_id}"
+        headers = {"Authorization": f"Bearer {api_key}"}
+        response = requests.delete(url, headers=headers)
+        
+        if response.status_code in [200, 204]:
+            logger.info(f"Successfully deleted Vapi {resource_type}: {object_id}")
+            return True
+        else:
+            logger.warning(f"Failed to delete Vapi {resource_type} {object_id}: {response.text}")
+            return False
+    except Exception as e:
+        logger.error(f"Error deleting Vapi {resource_type}: {e}")
+        return False
+
+def send_sms_greeting(to_number, business_config):
+    """Send an SMS greeting via Twilio"""
+    account_sid = os.environ.get('TWILIO_ACCOUNT_SID')
+    auth_token = os.environ.get('TWILIO_AUTH_TOKEN')
+    
+    # Use TWILIO_PHONE_NUMBER for SMS (purchased number)
+    # If not set, can try using the sandbox number but it usually requires verification for SMS too.
+    from_number = os.environ.get('TWILIO_PHONE_NUMBER')
+    
+    if not account_sid or not auth_token or not from_number:
+        logger.warning(f"Twilio credentials or TWILIO_PHONE_NUMBER missing. Cannot send SMS. (SID={bool(account_sid)}, Token={bool(auth_token)}, Number={bool(from_number)})")
+        return
+        
+    try:
+        client = Client(account_sid, auth_token)
+        
+        biz_name = business_config.get('business_name', 'Our Business')
+        owner_name = business_config.get('owner_name', 'The Owner')
+        location = business_config.get('location', 'our office')
+        contact_phone = business_config.get('phone', '')
+        
+        message_body = (
+            f"Thanks for calling {biz_name}!\n\n"
+            f"Here are our details:\n"
+            f"Location: {location}\n"
+            f"Owner: {owner_name} ({contact_phone})\n\n"
+            f"We look forward to serving you!"
+        )
+        
+        # Ensure to_number does NOT have whatsapp prefix, just E.164
+        # Vapi usually gives +1234567890
+        # If it has whatsapp: prefix (unlikely from Vapi), strip it.
+        if to_number.startswith('whatsapp:'):
+            to_number = to_number.replace('whatsapp:', '')
+            
+        message = client.messages.create(
+            from_=from_number,
+            body=message_body,
+            to=to_number
+        )
+        logger.info(f"SMS sent! SID: {message.sid}")
+    except Exception as e:
+        logger.error(f"Failed to send SMS: {e}")
+
+@app.route('/vapi/webhook', methods=['POST'])
+def vapi_webhook_handler():
+    """Handle Vapi Webhooks (e.g. end-of-call-report)"""
+    try:
+        data = request.json
+        message = data.get('message', {})
+        type_ = message.get('type')
+        
+        if type_ == 'end-of-call-report':
+            logger.info("Received end-of-call-report")
+            call = message.get('call', {})
+            
+            # Extract Caller Number
+            # Vapi schema: call -> customer -> number
+            customer = call.get('customer', {})
+            caller_number = customer.get('number')
+            
+            # Extract Business Context via Assistant ID or other metadata
+            # For simplicity, we can pass business_id in the original assistant webhook/metadata
+            # OR we match the assistant ID to our folders. 
+            # Let's try to extract business_id from the assistant override URL parameters if possible?
+            # Actually, Vapi payloads usually include the 'assistantId'.
+            # We can iterate our businesses to find which one owns this assistantId.
+            # (In a real DB this is a SQL query. Here we scan files.)
+            assistant_id = message.get('assistantId') or call.get('assistantId')
+            
+            logger.info(f"Webhook Debug - AssistantID: {assistant_id}, Caller: {caller_number}, CallID: {call.get('id')}")
+            
+            if assistant_id:
+                # Find Business
+                business = None
+                businesses_dir = Path("businesses")
+                if businesses_dir.exists():
+                    for item in businesses_dir.iterdir():
+                        if item.is_dir():
+                            path = item / "business_config.json"
+                            if path.exists():
+                                with open(path, 'r') as f:
+                                    try:
+                                        cfg = json.load(f)
+                                        if cfg.get('vapi_assistant_id') == assistant_id:
+                                            business = cfg
+                                            # Add ID to config object for downstream use
+                                            business['id'] = item.name 
+                                            break
+                                    except: pass
+                
+                if business:
+                    # Update conversation record with business_id if needed
+                    # (logic handled in extraction worker)
+                    
+                    if caller_number:
+                        logger.info(f"Sending SMS greeting to {caller_number}")
+                        send_sms_greeting(caller_number, business)
+                    else:
+                        logger.info("No caller number - skipping SMS.")
+                    
+                    # TRIGGER ASYNC LEAD EXTRACTION
+                    # We need the call ID to find the conversation
+                    call_id = call.get('id')
+                    if call_id:
+                        logger.info(f"Triggering background lead extraction for Call ID: {call_id}")
+                        
+                        def extract_lead_worker(session_id, biz_id, caller_num=None):
+                            try:
+                                db = get_db()
+                                # Get conversation to ensure we have messages
+                                conv = db.get_conversation(session_id)
+                                if not conv:
+                                    logger.warning(f"Conversation not found for extraction: {session_id}")
+                                    return
+                                    
+                                messages = json.loads(conv['messages'])
+                                if not messages:
+                                    logger.warning(f"No messages to analyze for {session_id}")
+                                    return
+                                    
+                                agent = get_agent(biz_id)
+                                if not agent:
+                                    logger.error(f"Agent not found for {biz_id}")
+                                    return
+                                    
+                                # Pass caller_num to prioritize physical ID
+                                lead_info = agent.extract_lead_info(messages, caller_number=caller_num)
+                                
+                                # Update DB
+                                db.update_conversation(
+                                    session_id=session_id,
+                                    messages=messages, # Pass existing messages
+                                    customer_name=lead_info.get('customer_name'),
+                                    customer_phone=lead_info.get('customer_phone'),
+                                    summary=lead_info.get('summary'),
+                                    lead_classification=lead_info.get('lead_classification'),
+                                    ended=True
+                                )
+                                logger.info(f"Vapi Lead Extraction Complete for {session_id}")
+                                
+                            except Exception as ex:
+                                logger.error(f"Vapi Extraction Failed: {ex}")
+
+                        import threading
+                        thread = threading.Thread(target=extract_lead_worker, args=(call_id, business['id'], caller_number))
+                        thread.daemon = True
+                        thread.start()
+                else:
+                    logger.warning(f"Could not find business for assistant ID: {assistant_id}")
+            
+        return jsonify({"success": True}), 200
+    except Exception as e:
+        logger.error(f"Webhook error: {e}")
+        return jsonify({"error": str(e)}), 500
 
 # Helper to read config for a specific business
 def get_business_config(business_id):
@@ -79,16 +429,99 @@ def setup_business():
         data['id'] = biz_id
         data['onboarding_status'] = 'complete'
         
+        # 2a. Handle Voice Mapping
+        # Use provided ID or default to Sarah (best multilingual)
+        data['elevenlabs_voice_id'] = data.get('voice_id', '5Q0t7uMcjvnagumLfvZi')
+            
+        # 2b. Handle Phone Provisioning
+        if data.get('request_new_number'):
+            logger.info("Requesting new Vapi phone number...")
+            prov_result = provision_vapi_number()
+            if prov_result:
+                # Assuming result structure has 'number' and 'id'
+                new_phone = prov_result.get('number')
+                vapi_phone_id = prov_result.get('id')
+                
+                data['deployment_phone'] = new_phone
+                data['vapi_phone_id'] = vapi_phone_id
+                logger.info(f"Provisioned Number: {new_phone} (ID: {vapi_phone_id})")
+            else:
+                logger.warning("Failed to provision number. Proceeding without it.")
+        
+        # 2c. Create or Update Vapi Assistant
+        existing_assistant_id = None
+        
+        # Check if we already have an assistant for this ID
+        try:
+            current_config_path = biz_dir / "business_config.json"
+            if current_config_path.exists():
+                with open(current_config_path, 'r') as f:
+                    curr_cfg = json.load(f)
+                    existing_assistant_id = curr_cfg.get('vapi_assistant_id')
+                    # Also preserve phone ID if not in new data
+                    if not data.get('vapi_phone_id'):
+                        data['vapi_phone_id'] = curr_cfg.get('vapi_phone_id')
+        except Exception as e:
+            logger.warning(f"Error reading existing config: {e}")
+
+        if existing_assistant_id:
+            logger.info(f"Updating existing Vapi Assistant: {existing_assistant_id}")
+            assistant_result = update_vapi_assistant(existing_assistant_id, biz_id, data)
+            # If update fails (e.g. deleted on Vapi side), fall back to create? 
+            # For now, assume it works or we manually fix.
+        else:
+            logger.info("Creating new Vapi Assistant...")
+            assistant_result = create_vapi_assistant(biz_id, data)
+
+        if assistant_result:
+            assistant_id = assistant_result.get('id')
+            data['vapi_assistant_id'] = assistant_id
+            logger.info(f"Vapi Assistant Ready: {assistant_id}")
+            
+            # 2d. Bind Number if we have one
+            if data.get('vapi_phone_id'):
+                bind_success = bind_vapi_number(data['vapi_phone_id'], assistant_id)
+                if bind_success:
+                    logger.info("Successfully bound phone number to assistant.")
+                else:
+                    logger.error("Failed to bind phone number to assistant.")
+        else:
+            logger.warning("Failed to create Vapi Assistant.")
+            
         with open(biz_dir / "business_config.json", 'w') as f:
             json.dump(data, f, indent=2)
             
-        # Trigger KB extraction
+        # 3. Handle separate "Agent Behavior" if provided
+        # We save this as a special transcript so it gets ingested into the KB logic
+        agent_behavior = data.get('agent_behavior')
+        if agent_behavior:
+            instructions_file = biz_dir / "transcripts" / "owner_instructions.json"
+            instructions_content = {
+                "source": "owner_instructions",
+                "transcript": f"IMPORTANT AGENT INSTRUCTIONS FROM OWNER:\n{agent_behavior}\n\nYou must align your personality and responses with these instructions.",
+                "timestamp": None,
+                "service": "system_instruction",
+                "_filename": "owner_instructions.json"
+            }
+            with open(instructions_file, 'w') as f:
+                json.dump(instructions_content, f, indent=2)
+            
+        # Trigger KB extraction (Async)
         from extract_qa import extract_knowledge_base
-        extract_knowledge_base(business_id=biz_id)
+        import threading
         
-        return jsonify({"success": True, "business_id": biz_id})
+        # Run in background so UI doesn't hang
+        thread = threading.Thread(target=extract_knowledge_base, args=(biz_id,))
+        thread.daemon = True
+        thread.start()
+        
+        return jsonify({
+            "success": True, 
+            "business_id": biz_id,
+            "deployment_phone": data.get('deployment_phone')
+        })
     except Exception as e:
-        # logger.error(f"Setup error: {e}")
+        logger.error(f"Setup error: {e}")
         return jsonify({"error": str(e)}), 500
 
 @app.route('/upload-transcripts/<business_id>', methods=['POST'])
@@ -110,32 +543,50 @@ def upload_transcripts(business_id):
     processed_count = 0
     errors = []
     
+    # First save all files to disk (must be done in request context)
+    saved_files = []
     for file in files:
-        if file.filename == '':
-            continue
-            
+        if file.filename == '': continue
         filename = file.filename
         raw_path = raw_dir / filename
         file.save(raw_path)
-        
+        saved_files.append((filename, raw_path))
+
+    # Determine optimal worker count (max 5 or number of files)
+    import concurrent.futures
+    max_workers = min(5, len(saved_files)) if saved_files else 1
+    
+    processed_count = 0
+    errors = []
+
+    def process_single_file(file_info):
+        f_name, f_path = file_info
         try:
-            logger.info(f"Processing {filename}...")
+            logger.info(f"Processing {f_name}...")
             # Process file (transcribe audio/pdf/etc)
-            text_content = process_file(raw_path)
+            text_content = process_file(f_path)
             
             # Save as standard JSON transcript
-            json_content = convert_to_transcript_json(text_content, filename)
+            json_content = convert_to_transcript_json(text_content, f_name)
             
             # Create a safe filename for the json
-            safe_name = Path(filename).stem + ".json"
+            safe_name = Path(f_name).stem + ".json"
             with open(transcripts_dir / safe_name, 'w') as f:
                 json.dump(json_content, f, indent=2)
-                
-            processed_count += 1
-            
+            return True, f_name
         except Exception as e:
-            logger.error(f"Failed to process {filename}: {e}")
-            errors.append(f"{filename}: {str(e)}")
+            logger.error(f"Error processing {f_name}: {e}")
+            return False, f"{f_name}: {str(e)}"
+
+    if saved_files:
+        with concurrent.futures.ThreadPoolExecutor(max_workers=max_workers) as executor:
+            future_to_file = {executor.submit(process_single_file, f): f for f in saved_files}
+            for future in concurrent.futures.as_completed(future_to_file):
+                success, result = future.result()
+                if success:
+                    processed_count += 1
+                else:
+                    errors.append(result)
             
     # Reload agent context if it's active
     if business_id in agents:
@@ -155,6 +606,28 @@ def delete_business(business_id):
         biz_dir = Path(f"businesses/{business_id}")
         if not biz_dir.exists():
             return jsonify({"error": "Business not found"}), 404
+            
+        # Cleanup Vapi Resources FIRST
+        try:
+            config_path = biz_dir / "business_config.json"
+            if config_path.exists():
+                with open(config_path, 'r') as f:
+                    config = json.load(f)
+                    
+                # Delete Assistant
+                assistant_id = config.get('vapi_assistant_id')
+                if assistant_id:
+                    logger.info(f"Deleting Vapi Assistant: {assistant_id}")
+                    delete_vapi_object('assistant', assistant_id)
+                    
+                # Delete Phone Number
+                phone_id = config.get('vapi_phone_id')
+                if phone_id:
+                     logger.info(f"Deleting Vapi Phone: {phone_id}")
+                     delete_vapi_object('phone-number', phone_id)
+        except Exception as e:
+            logger.error(f"Error cleaning up Vapi resources: {e}")
+            # Continue to delete local files anyway
             
         import shutil
         shutil.rmtree(biz_dir)
@@ -399,6 +872,34 @@ def save_conversation():
         logger.error(f"Error saving conversation: {e}")
         return jsonify({"error": str(e)}), 500
 
+@app.route('/api/dashboard-stats')
+def dashboard_stats():
+    """JSON Endpoint for React Dashboard"""
+    try:
+        business_id = request.args.get('business_id', 'rainbow_default')
+        limit = int(request.args.get('limit', 50))
+        
+        db = get_db()
+        leads = db.get_all_conversations(limit=limit, business_id=business_id)
+        
+        # Calculate Stats
+        stats = {
+            "total_conversations": len(leads),
+            "hot_leads": len([l for l in leads if l.get('lead_classification') == 'HOT_LEAD']),
+            "general_inquiries": len([l for l in leads if l.get('lead_classification') == 'GENERAL_INQUIRY']),
+            "spam": len([l for l in leads if l.get('lead_classification') == 'SPAM']),
+            "unrelated": len([l for l in leads if l.get('lead_classification') == 'UNRELATED']),
+        }
+        
+        return jsonify({
+            "business_id": business_id,
+            "stats": stats,
+            "recent_conversations": leads
+        })
+    except Exception as e:
+        logger.error(f"Dashboard Stats Error: {e}")
+        return jsonify({"error": str(e)}), 500
+
 @app.route('/dashboard')
 def dashboard():
     """Enhanced dashboard to view captured leads with classification"""
@@ -523,6 +1024,195 @@ def dashboard():
         logger.error(f"Dashboard error: {e}")
         return f"<h1>Error loading dashboard</h1><p>{str(e)}</p>", 500
 
+# ==========================================
+# Vapi.ai / Twilio Integration Handler
+# ==========================================
+@app.route('/vapi/chat/completions', methods=['GET', 'POST'])
+def vapi_chat_handler():
+    """
+    Standard OpenAI-compatible Chat Completions endpoint for Vapi.ai.
+    Vapi sends the conversation history here. We use our TranscriptQueryAgent to reply.
+    """
+    if request.method == 'GET':
+        return jsonify({"status": "ok", "message": "Vapi Endpoint Ready"}), 200
+
+    import time
+    start_time = time.time() # Start timer
+    try:
+        data = request.json
+        stream_request = data.get('stream', False) or data.get('stream', 'false') == 'true'
+        
+        # Extract business_id from query params (e.g. ?business_id=xyz)
+        raw_biz_id = request.args.get('business_id', 'rainbow_default')
+        # Vapi/OpenAI client sometimes appends /chat/completions to the base URL query param
+        business_id = raw_biz_id.split('/')[0]
+        
+        logger.info(f"DEBUG VAPI: Full URL: {request.url}")
+        logger.info(f"DEBUG VAPI: Args: {request.args}")
+        
+        logger.info(f"Received Vapi Request for {business_id}: {len(data.get('messages', []))} messages. Stream={stream_request}")
+        
+        # 0. Get/Create DB Session
+        # Vapi provides a 'call' object with 'id' in the JSON body usually, or we use a header. 
+        # For robustness, we'll look for 'call' dictionary or default to a generated one if needed.
+        call_id = data.get('call', {}).get('id') or data.get('call_id')
+        if not call_id:
+             # Fallback if Vapi doesn't send ID (unlikely)
+             call_id = f"vapi-{int(time.time())}"
+        
+        db = get_db()
+        # Check if exists, if not create
+        existing = db.get_conversation(call_id)
+        if not existing:
+             # Create with correct business ID
+             db.create_conversation(session_id=call_id, business_id=business_id, language='Hindi')
+        
+        # 1. Extract messages
+        messages = data.get('messages', [])
+        if not messages:
+            return jsonify({"error": "No messages provided"}), 400
+            
+        # 2. Get the latest user message
+        last_message = messages[-1]
+        user_query = last_message.get('content', '')
+        logger.info(f"Vapi User Query: {user_query}")
+        
+        # Save updated history BEFORE processing (so we have the user query)
+        db.update_conversation(session_id=call_id, messages=messages)
+
+        # 3. Convert History for Agent
+        formatted_history = []
+        for msg in messages[:-1]:
+             formatted_history.append({
+                 "role": msg.get("role"),
+                 "text": msg.get("content", "") 
+             })
+
+        # 3.5 Look up Caller Name for Persistent Recognition
+        # Only needed if this is the start of conversation (or we want to remind the agent)
+        caller_name = None
+        caller_number = data.get('call', {}).get('customer', {}).get('number')
+        
+        # If we have a number, check DB
+        if caller_number:
+            known_name = db.get_customer_name(caller_number, business_id)
+            if known_name:
+                caller_name = known_name
+                logger.info(f"Recognized caller {caller_number} as '{caller_name}'")
+
+        # 4. Call our existing Agent Logic
+        agent = get_agent(business_id) 
+        
+        response_data = agent.answer_query(
+            query=user_query,
+            conversation_history=formatted_history,
+            caller_name=caller_name
+        )
+        
+        agent_reply = response_data.get('answer', "I apologize, I'm having trouble connecting right now.")
+        
+        # Save the Assistant's reply to DB as well (Vapi will send it in next turn history, but nice to have now)
+        # Actually Vapi ensures history consistency, so just saving 'messages' above is usually enough for the *input* state.
+        # But we want to see the reply in the dashboard immediately. 
+        # So we append our new reply to the list locally and save again.
+        updated_messages = messages + [{"role": "assistant", "content": agent_reply}]
+        db.update_conversation(session_id=call_id, messages=updated_messages)
+        
+        duration = time.time() - start_time
+        logger.info(f"Vapi Response Generated in {duration:.2f}s: {agent_reply[:50]}...")
+        
+        # 5. Return Streaming Response (Server-Sent Events)
+        # Even if stream=False, Vapi often works better with streaming format or at least handles it.
+        # But correctly, if stream=True, we MUST stream.
+        
+        if stream_request:
+            def generate_stream():
+                # Yield the content as a single chunk (or we could split it specifically if needed)
+                # But for now, one fast chunk is fine, the protocol is what matters.
+                chunk_id = "chatcmpl-" + str(int(time.time()))
+                created = int(time.time())
+                
+                # HEAD
+                # yield f"data: {json.dumps({'id': chunk_id, 'object': 'chat.completion.chunk', 'created': created, 'model': 'savita-devi-v1', 'choices': [{'index': 0, 'delta': {'role': 'assistant'}, 'finish_reason': None}]})}\n\n"
+                
+                # CONTENT
+                response_chunk = {
+                    "id": chunk_id,
+                    "object": "chat.completion.chunk",
+                    "created": created,
+                    "model": "savita-devi-v1",
+                    "choices": [
+                        {
+                            "index": 0,
+                            "delta": {
+                                "content": agent_reply
+                            },
+                            "finish_reason": None
+                        }
+                    ]
+                }
+                yield f"data: {json.dumps(response_chunk)}\n\n"
+                
+                # STOP
+                stop_chunk = {
+                    "id": chunk_id,
+                    "object": "chat.completion.chunk",
+                    "created": created,
+                    "model": "savita-devi-v1",
+                    "choices": [
+                        {
+                            "index": 0,
+                            "delta": {},
+                            "finish_reason": "stop"
+                        }
+                    ]
+                }
+                yield f"data: {json.dumps(stop_chunk)}\n\n"
+                yield "data: [DONE]\n\n"
+
+            return Response(generate_stream(), mimetype='text/event-stream')
+
+        # 6. Fallback to Non-Streaming if explicitly not requested (though unlikely for Vapi)
+        return jsonify({
+            "id": "chatcmpl-" + str(int(time.time())),
+            "object": "chat.completion",
+            "created": int(time.time()),
+            "model": "savita-devi-v1",
+            "choices": [
+                {
+                    "index": 0,
+                    "message": {
+                        "role": "assistant",
+                        "content": agent_reply
+                    },
+                    "finish_reason": "stop"
+                }
+            ],
+            "usage": {
+                "prompt_tokens": 0,
+                "completion_tokens": 0,
+                "total_tokens": 0
+            }
+        })
+        
+    except Exception as e:
+        logger.error(f"Vapi Handler Error: {str(e)}")
+        import traceback
+        traceback.print_exc()
+        return jsonify({
+             "choices": [
+                {
+                    "message": {
+                        "role": "assistant",
+                        "content": "I apologize, I am experiencing a technical issue. Please call back later."
+                    }
+                }
+            ]
+        }), 500
+
 if __name__ == '__main__':
-    print("Starting Flask server on port 5001...")
-    app.run(host='0.0.0.0', port=5001, debug=True)
+    # Ensure logging is set up to show INFO logs
+    logging.basicConfig(level=logging.INFO)
+    print("Starting Flask server on port 5002...")
+    # Use threaded=True for better concurrency
+    app.run(host='0.0.0.0', port=5002, debug=False, threaded=True)

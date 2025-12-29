@@ -1,0 +1,271 @@
+{
+  "total_pairs": 19,
+  "created_at": "2025-12-25T14:28:12.710584",
+  "qa_pairs": [
+    {
+      "question": "What time do you open?",
+      "answer": "We open at 9 AM every day from Monday to Sunday.",
+      "intent": "hours",
+      "question_language": "english",
+      "answer_language": "english",
+      "primary_language": "english",
+      "intent_confidence": 1,
+      "context": {
+        "conversation_id": "sample_001",
+        "timestamp": "2025-12-25T14:28:12.710556"
+      }
+    },
+    {
+      "question": "What time do you close?",
+      "answer": "We close at 10 PM on weekdays and 11 PM on weekends.",
+      "intent": "hours",
+      "question_language": "english",
+      "answer_language": "english",
+      "primary_language": "english",
+      "intent_confidence": 1,
+      "context": {
+        "conversation_id": "sample_002",
+        "timestamp": "2025-12-25T14:28:12.710563"
+      }
+    },
+    {
+      "question": "Aap kab khulte hain?",
+      "answer": "Hum roz subah 9 baje khulte hain, somwar se raviwar tak.",
+      "intent": "hours",
+      "question_language": "hindi",
+      "answer_language": "hindi",
+      "primary_language": "hindi",
+      "intent_confidence": 1,
+      "context": {
+        "conversation_id": "sample_003",
+        "timestamp": "2025-12-25T14:28:12.710564"
+      }
+    },
+    {
+      "question": "Kitne baje band karte hain?",
+      "answer": "Hum weekdays mein raat 10 baje aur weekends mein 11 baje band karte hain.",
+      "intent": "hours",
+      "question_language": "hindi",
+      "answer_language": "hindi",
+      "primary_language": "hindi",
+      "intent_confidence": 1,
+      "context": {
+        "conversation_id": "sample_004",
+        "timestamp": "2025-12-25T14:28:12.710566"
+      }
+    },
+    {
+      "question": "Yaavaga khali maadtira?",
+      "answer": "Naavu ella dina belige 9 gantege khali maadteve, somavaara ninda ravivaara varegu.",
+      "intent": "hours",
+      "question_language": "kannada",
+      "answer_language": "kannada",
+      "primary_language": "kannada",
+      "intent_confidence": 1,
+      "context": {
+        "conversation_id": "sample_005",
+        "timestamp": "2025-12-25T14:28:12.710567"
+      }
+    },
+    {
+      "question": "Do you have tables available right now?",
+      "answer": "Yes, we have tables available. Would you like to make a reservation?",
+      "intent": "availability",
+      "question_language": "english",
+      "answer_language": "english",
+      "primary_language": "english",
+      "intent_confidence": 1,
+      "context": {
+        "conversation_id": "sample_006",
+        "timestamp": "2025-12-25T14:28:12.710568"
+      }
+    },
+    {
+      "question": "How long is the wait for a table?",
+      "answer": "The current wait time is about 15-20 minutes for a table of 4.",
+      "intent": "availability",
+      "question_language": "english",
+      "answer_language": "english",
+      "primary_language": "english",
+      "intent_confidence": 1,
+      "context": {
+        "conversation_id": "sample_007",
+        "timestamp": "2025-12-25T14:28:12.710569"
+      }
+    },
+    {
+      "question": "Kya table available hai?",
+      "answer": "Haan, hamare paas table available hai. Kya aap reservation karna chahte hain?",
+      "intent": "availability",
+      "question_language": "hindi",
+      "answer_language": "hindi",
+      "primary_language": "hindi",
+      "intent_confidence": 1,
+      "context": {
+        "conversation_id": "sample_008",
+        "timestamp": "2025-12-25T14:28:12.710570"
+      }
+    },
+    {
+      "question": "What's on your menu today?",
+      "answer": "We have a variety of dishes including North Indian, South Indian, and Chinese cuisine. Would you like me to tell you about our specials?",
+      "intent": "menu",
+      "question_language": "english",
+      "answer_language": "english",
+      "primary_language": "english",
+      "intent_confidence": 1,
+      "context": {
+        "conversation_id": "sample_009",
+        "timestamp": "2025-12-25T14:28:12.710571"
+      }
+    },
+    {
+      "question": "Do you have vegetarian options?",
+      "answer": "Yes, we have many vegetarian options including dal, paneer dishes, and vegetable curries.",
+      "intent": "menu",
+      "question_language": "english",
+      "answer_language": "english",
+      "primary_language": "english",
+      "intent_confidence": 1,
+      "context": {
+        "conversation_id": "sample_010",
+        "timestamp": "2025-12-25T14:28:12.710572"
+      }
+    },
+    {
+      "question": "Aaj menu mein kya hai?",
+      "answer": "Hamare paas North Indian, South Indian aur Chinese khana hai. Kya aap hamare special dishes ke baare mein sunna chahenge?",
+      "intent": "menu",
+      "question_language": "hindi",
+      "answer_language": "hindi",
+      "primary_language": "hindi",
+      "intent_confidence": 1,
+      "context": {
+        "conversation_id": "sample_011",
+        "timestamp": "2025-12-25T14:28:12.710574"
+      }
+    },
+    {
+      "question": "Where are you located?",
+      "answer": "We are located on MG Road, near the metro station. You can find us easily using Google Maps.",
+      "intent": "location",
+      "question_language": "english",
+      "answer_language": "english",
+      "primary_language": "english",
+      "intent_confidence": 1,
+      "context": {
+        "conversation_id": "sample_012",
+        "timestamp": "2025-12-25T14:28:12.710575"
+      }
+    },
+    {
+      "question": "What are your prices like?",
+      "answer": "Our prices are very reasonable. Main dishes start from 150 rupees and go up to 400 rupees.",
+      "intent": "pricing",
+      "question_language": "english",
+      "answer_language": "english",
+      "primary_language": "english",
+      "intent_confidence": 1,
+      "context": {
+        "conversation_id": "sample_013",
+        "timestamp": "2025-12-25T14:28:12.710576"
+      }
+    },
+    {
+      "question": "Do you provide home delivery?",
+      "answer": "Yes, we provide home delivery within 5 km radius. Delivery charges are 30 rupees.",
+      "intent": "services",
+      "question_language": "english",
+      "answer_language": "english",
+      "primary_language": "english",
+      "intent_confidence": 1,
+      "context": {
+        "conversation_id": "sample_014",
+        "timestamp": "2025-12-25T14:28:12.710577"
+      }
+    },
+    {
+      "question": "Phone number kya hai?",
+      "answer": "Hamara phone number hai 080-12345678. Aap call kar sakte hain.",
+      "intent": "contact",
+      "question_language": "hindi",
+      "answer_language": "hindi",
+      "primary_language": "hindi",
+      "intent_confidence": 1,
+      "context": {
+        "conversation_id": "sample_015",
+        "timestamp": "2025-12-25T14:28:12.710578"
+      }
+    },
+    {
+      "question": "Give me your address",
+      "answer": "We are located on MG Road, near the metro station.",
+      "intent": "location",
+      "question_language": "english",
+      "answer_language": "english",
+      "primary_language": "english",
+      "intent_confidence": 1,
+      "context": {
+        "conversation_id": "sample_016",
+        "timestamp": "2025-12-25T14:28:12.710579"
+      }
+    },
+    {
+      "question": "Kitna kharcha aayega?",
+      "answer": "Our prices are very reasonable. Main dishes start from 150 rupees.",
+      "intent": "pricing",
+      "question_language": "hindi",
+      "answer_language": "hindi",
+      "primary_language": "hindi",
+      "intent_confidence": 1,
+      "context": {
+        "conversation_id": "sample_017",
+        "timestamp": "2025-12-25T14:28:12.710581"
+      }
+    },
+    {
+      "question": "Catering karte ho?",
+      "answer": "Yes, we provide catering services for parties.",
+      "intent": "services",
+      "question_language": "hindi",
+      "answer_language": "english",
+      "primary_language": "mixed",
+      "intent_confidence": 1,
+      "context": {
+        "conversation_id": "sample_018",
+        "timestamp": "2025-12-25T14:28:12.710582"
+      }
+    },
+    {
+      "question": "How can I contact you?",
+      "answer": "You can reach us at 080-12345678 or email us.",
+      "intent": "contact",
+      "question_language": "english",
+      "answer_language": "english",
+      "primary_language": "english",
+      "intent_confidence": 1,
+      "context": {
+        "conversation_id": "sample_019",
+        "timestamp": "2025-12-25T14:28:12.710583"
+      }
+    }
+  ],
+  "metadata": {
+    "source": "sample_data_generator",
+    "languages": [
+      "english",
+      "hindi",
+      "kannada"
+    ],
+    "intents": [
+      "hours",
+      "availability",
+      "menu",
+      "location",
+      "pricing",
+      "services",
+      "contact"
+    ],
+    "description": "Sample multilingual Q&A pairs for testing the customer service agent"
+  }
+}

@@ -230,13 +230,14 @@ class TranscriptQueryAgent:
         
         raise Exception("No working Gemini model found. Please check your API key and quota.")
     
-    def answer_query(self, query: str, language: Optional[str] = None, conversation_history: List[Dict] = None) -> Dict:
+    def answer_query(self, query: str, language: Optional[str] = None, conversation_history: List[Dict] = None, caller_name: Optional[str] = None) -> Dict:
         """Answer a query using the transcript knowledge base
         
         Args:
             query: The user's question
             language: Optional language override (Hindi/English)
             conversation_history: List of previous messages [{"role": "user/assistant", "text": "..."}]
+            caller_name: Optional name of the caller if known from DB
         """
         if not self.transcripts and not self.knowledge_base:
             return {
@@ -263,34 +264,28 @@ class TranscriptQueryAgent:
             user_turns = sum(1 for msg in conversation_history if msg.get('role') == 'user')
             current_turn = user_turns + 1
             
-            # Check if we already asked for contact info in ANY previous turn
-            asked_for_contact = any(
-                ("name" in msg.get('text', '').lower() and "phone" in msg.get('text', '').lower()) or
-                ("naam" in msg.get('text', '').lower() and "number" in msg.get('text', '').lower())
+            # Check if we already asked for NAME in previous turn (we don't ask for phone anymore)
+            asked_for_name = any(
+                ("name" in msg.get('text', '').lower() or "naam" in msg.get('text', '').lower())
                 for msg in conversation_history 
                 if msg.get('role') == 'assistant'
             )
             
-            # Check if user provided contact info (regex heuristic)
-            import re
-            provided_contact = any(
-                re.search(r'\d{10}', msg.get('text', '')) or re.search(r'\d{3}[-\s]\d{3}[-\s]\d{4}', msg.get('text', ''))
-                for msg in conversation_history
-                if msg.get('role') == 'user'
-            )
-            
             # Determine lead capture instruction
             lead_capture_instruction = ""
-            if not asked_for_contact and not provided_contact:
-                # Ask in the first 2 turns ONLY
-                if current_turn <= 2:
-                    lead_capture_instruction = "IMPORTANT: You MUST ask for their name and phone number in this response. Say something like 'May I have your name and number so I can better assist you?'"
-                else:
-                    # If we missed it early, don't nag them late in conversation
-                    lead_capture_instruction = "DO NOT ask for name or phone number now. Focus on the query."
+            
+            # IF WE KNOW THE NAME (Persistent Recognition) -> Start of Call
+            if caller_name and current_turn <= 1:
+                lead_capture_instruction = f"IMPORTANT: The caller is known as '{caller_name}'. Welcome them back by name (e.g., 'Welcome back {caller_name}' or 'Hi {caller_name}'). **DO NOT** ask for their name again."
+            
+            # IF WE DON'T KNOW THE NAME -> Ask once
+            elif not caller_name and not asked_for_name and current_turn <= 1:
+                # Ask in the FIRST turn ONLY
+                lead_capture_instruction = "IMPORTANT: You MUST ask for their name in this response (e.g., 'May I have your name?'). **DO NOT** ask for their phone number."
+            
             else:
-                # If we asked OR they provided, never ask again
-                lead_capture_instruction = "**DO NOT** ask for name or phone number. We already have it or asked for it."
+                # Never ask again, and NEVER ask for phone number
+                lead_capture_instruction = "**DO NOT** ask for name or phone number. Focus on the query."
 
             # Determine greeting instruction
             # Only greet if this is the absolute first message (no history)
@@ -303,6 +298,12 @@ class TranscriptQueryAgent:
             owner_phone = self.config.get('phone', 'directly')
             agent_name = self.config.get('agent_name', 'Virtual Assistant')
             business_name = self.config.get('business_name', 'our business')
+            
+            # Get explicit agent behavior instructions
+            agent_behavior = self.config.get('agent_behavior', '')
+            behavior_instruction = ""
+            if agent_behavior:
+                behavior_instruction = f"8. **CUSTOM OWNER INSTRUCTIONS**: {agent_behavior}\n"
             
             prompt = f"""You are {agent_name}, the AI assistant for {business_name}, responding to customer inquiries. Answer naturally and conversationally.
 
@@ -339,8 +340,15 @@ CRITICAL INSTRUCTIONS:
    - We must capture name and phone number early (First 2 turns).
    - {lead_capture_instruction}
    - If asking, request BOTH together.
-7. **GREETING**: {greeting_instruction}
-
+    - If asking, request BOTH together.
+7. **NUMBER FORMATTING (CRITICAL FOR TTS)**:
+   - **Hindi**: ALWAYS write numbers/prices in **words** (Devanagari script), never digits.
+     - ❌ "FEES: ₹2600" -> TTS reads "two six zero zero" (Bad)
+     - ✅ "FEES: दो हज़ार छह सौ रुपये" -> TTS reads "Do Hazaar Chhe Sau Rupye" (Good)
+     - ✅ "Date: 15 taareekh" -> "पंद्रह तारीख"
+   - **English**: Digits are okay, but words are safer for prices (e.g., "2600 rupees" or "twenty-six hundred rupees").
+8. **GREETING**: {greeting_instruction}
+{behavior_instruction}
 Respond as {agent_name} (in Hindi Devanagari if user used Hindi/Hinglish, otherwise English):"""
         
             # Generate response with retries
@@ -414,12 +422,12 @@ Respond as {agent_name} (in Hindi Devanagari if user used Hindi/Hinglish, otherw
                     "error": "processing_error"
                 }
     
-    def extract_lead_info(self, conversation_messages: List[Dict]) -> Dict:
+    def extract_lead_info(self, conversation_messages: List[Dict], caller_number: Optional[str] = None) -> Dict:
         """Extract customer name, phone number, and summary from conversation using Gemini"""
         if not conversation_messages:
             return {
                 "customer_name": None,
-                "customer_phone": None,
+                "customer_phone": caller_number, # Use physical caller ID if available
                 "summary": "No conversation data"
             }
         
@@ -428,11 +436,15 @@ Respond as {agent_name} (in Hindi Devanagari if user used Hindi/Hinglish, otherw
         
         # Format conversation for analysis
         conversation_text = "\n".join([
-            f"{'Customer' if msg['role'] == 'user' else 'SavitaDevi'}: {msg['text']}"
+            f"{'Customer' if msg.get('role') == 'user' else 'SavitaDevi'}: {msg.get('text') or msg.get('content', '')}"
             for msg in conversation_messages
         ])
         
-        prompt = f"""Analyze this conversation between a customer and SavitaDevi (Rainbow Driving School owner) and extract the following information:
+        # Get agent and business context
+        agent_name = self.config.get('agent_name', 'Assistant')
+        business_name = self.config.get('business_name', 'the business')
+        
+        prompt = f"""Analyze this conversation between a customer and {agent_name} ({business_name}) and extract the following information:
 
 CONVERSATION:
 {conversation_text}
@@ -453,14 +465,15 @@ LEAD CLASSIFICATION CRITERIA:
 IMPORTANT:
 - If information is NOT mentioned, return "Not provided"
 - For phone numbers, extract exactly as mentioned (don't add country codes if not given)
-- For names, handle both English and Hindi names
-- Summary should be in English regardless of conversation language
+- **ALL OUTPUT MUST BE IN ENGLISH**.
+  - **Names**: If the user provides a name in Hindi/Devanagari (e.g., "अंकिता"), you MUST transliterate it to English (e.g., "Ankita").
+  - **Summary**: Must be in English, even if the conversation was entirely in Hindi.
 - Choose ONE classification that best fits the conversation
 
 Respond in this EXACT format:
-NAME: [customer name or "Not provided"]
+NAME: [English Name or "Not provided"]
 PHONE: [phone number or "Not provided"]
-SUMMARY: [brief summary of inquiry]
+SUMMARY: [English summary]
 CLASSIFICATION: [HOT_LEAD or GENERAL_INQUIRY or SPAM or UNRELATED]"""
 
         try:
@@ -481,7 +494,7 @@ CLASSIFICATION: [HOT_LEAD or GENERAL_INQUIRY or SPAM or UNRELATED]"""
             lines = result_text.split('\n')
             extracted = {
                 "customer_name": None,
-                "customer_phone": None,
+                "customer_phone": caller_number, # STRICT: Only use physical Caller ID. If None, stays None.
                 "summary": None,
                 "lead_classification": None
             }
@@ -491,8 +504,8 @@ CLASSIFICATION: [HOT_LEAD or GENERAL_INQUIRY or SPAM or UNRELATED]"""
                     name = line.replace("NAME:", "").strip()
                     extracted["customer_name"] = name if name != "Not provided" else None
                 elif line.startswith("PHONE:"):
-                    phone = line.replace("PHONE:", "").strip()
-                    extracted["customer_phone"] = phone if phone != "Not provided" else None
+                    # Ignore LLM extraction for phone field per user request
+                    pass 
                 elif line.startswith("SUMMARY:"):
                     summary = line.replace("SUMMARY:", "").strip()
                     extracted["summary"] = summary if summary != "Not provided" else None

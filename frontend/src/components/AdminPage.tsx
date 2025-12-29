@@ -17,7 +17,7 @@ const AdminPage: React.FC<AdminPageProps> = ({ onBack }) => {
 
     const loadBusinesses = () => {
         setLoading(true);
-        fetch('http://localhost:5001/businesses')
+        fetch('http://localhost:5002/businesses')
             .then(res => res.json())
             .then(data => {
                 setBusinesses(data);
@@ -41,7 +41,7 @@ const AdminPage: React.FC<AdminPageProps> = ({ onBack }) => {
         if (!deleteIntent) return;
 
         try {
-            const res = await fetch(`http://localhost:5001/delete-business/${deleteIntent.id}`, {
+            const res = await fetch(`http://localhost:5002/delete-business/${deleteIntent.id}`, {
                 method: 'DELETE'
             });
             if (res.ok) {

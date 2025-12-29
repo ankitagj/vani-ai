@@ -142,6 +142,25 @@ class LeadsDatabase:
         """, (limit,))
         
         return [dict(row) for row in cursor.fetchall()]
+
+    def get_customer_name(self, customer_phone: str, business_id: str) -> Optional[str]:
+        """Get the most recent customer name for a phone number within a business"""
+        if not customer_phone:
+            return None
+            
+        cursor = self.conn.cursor()
+        cursor.execute("""
+            SELECT customer_name 
+            FROM conversations 
+            WHERE customer_phone = ? AND business_id = ? AND customer_name IS NOT NULL
+            ORDER BY created_at DESC 
+            LIMIT 1
+        """, (customer_phone, business_id))
+        
+        row = cursor.fetchone()
+        if row:
+            return row['customer_name']
+        return None
     
     def close(self):
         """Close database connection"""

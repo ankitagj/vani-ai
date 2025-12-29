@@ -1,0 +1,57 @@
+Transcription Service: gemini
+Detected Language: unknown
+Source Language: en
+Translated to: English
+Timestamp: 2025-12-24T22:05:54.130894
+
+==================================================
+
+TRANSCRIPT (English):
+--------------------------------------------------
+Speaker 1: Hello.
+Speaker 2: Hello sir namaskari.
+Speaker 3: Namaskara.
+Speaker 2: Madam namaga scooter class bekagidri madam.
+Speaker 3: Nane kalastini helri.
+Speaker 2: Aa yelli barthiri madam?
+Speaker 3: Taruneshwar nagar.
+Speaker 2: madam aa yeshthada madam amount.
+Speaker 3: 2600 fees adari hattu dindu course adari.
+Speaker 2: 2600 ri.
+Speaker 3: Haa hattu dindu course.
+Speaker 2: Timing ri?
+Speaker 3: Timing munjale ombhatthu vari chalu aathadri chenji madikonduna continue batches aawri bere bere timing aawri nim yaav timing beku neevu decide maadkobekri.
+Speaker 2: Ega mundinmu naalku gante yeshtu ghante kalustiri neevu?
+Speaker 3: Illa ri madam illi bandre nimge gottaagtadari round mele depend ide.
+Speaker 2: Yenri madam?
+Speaker 3: Round.
+Speaker 3: Basic basic yelle kalustivi.
+Speaker 2: Houudri?
+Speaker 3: Yeshtu time aathatda gottilla alla nimge.
+Speaker 2: Haa haa ri.
+Speaker 3: Hing helakhatini madam.
+Speaker 2: Illa namaga naalku ghante bandare yeshtu ghante aithana antha nanu vichara.
+Speaker 3: Madam 35 minutes 45 minutes one hour helak aagalla yeshtu time aathatda antha.
+Speaker 2: Houdri.
+Speaker 2: Aa ri 2600 adari enu kamm aagallri.
+Speaker 3: Aa itri.
+Speaker 1: Hello?
+Speaker 2: Hello?
+Speaker 1: Haa heli?
+Speaker 2: Adhe ri enu kamm aagallri?
+Speaker 1: Illa madam kadime aagalla.
+Speaker 2: Taruneshwar nagarnage yelri?
+Speaker 1: KB Kalyan Mantap near.
+Speaker 2: Yenri?
+Speaker 1: Near KB Kalyan Mantap.
+Speaker 2: KB Kalyan mantap ri. Haa. Aa yaavagind hiddu admission yenu tarbek yenri documents adu?
+Speaker 1: Documents 1100 first fee three days aagidmele remaining amount one passport size photo.
+Speaker 2: Haa ri.
+Speaker 1: Asht bekri.
+Speaker 2: Haudri?
+Speaker 1: Haa ri.
+Speaker 2: Aaytu aaytu ri madam naavu ivattu bandh betti aatheevri madam.
+Speaker 1: Okay okay parvaagilla parvaagilla.
+Speaker 2: Okay okay.
+Speaker 3: Helli? Haa Innu madam.
+Speaker 1: Okay.

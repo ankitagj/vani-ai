@@ -2,6 +2,7 @@ import { ElevenLabsInput } from './components/ElevenLabsInput';
 import SetupPage from './components/SetupPage';
 import BusinessDirectory from './components/BusinessDirectory';
 import AdminPage from './components/AdminPage';
+import DashboardView from './components/DashboardView';
 import { useState, useEffect } from 'react';
 
 interface BusinessConfig {
@@ -11,7 +12,7 @@ interface BusinessConfig {
   onboarding_status: string;
 }
 
-type View = 'directory' | 'chat' | 'setup' | 'admin';
+type View = 'directory' | 'chat' | 'setup' | 'admin' | 'dashboard';
 
 function App() {
   const [view, setView] = useState<View>('directory');
@@ -21,11 +22,11 @@ function App() {
   const [showKB, setShowKB] = useState(false);
   const [kbContent, setKbContent] = useState<any>(null);
 
-  // Load config when entering chat mode
+  // Load config when entering chat or dashboard mode
   useEffect(() => {
-    if (view === 'chat' && businessId) {
+    if ((view === 'chat' || view === 'dashboard') && businessId) {
       setLoadingConfig(true);
-      fetch(`http://localhost:5001/config/${businessId}`)
+      fetch(`http://localhost:5002/config/${businessId}`)
         .then(res => res.json())
         .then(data => {
           setConfig(data);
@@ -66,7 +67,7 @@ function App() {
 
   const fetchKB = async () => {
     try {
-      const res = await fetch(`http://localhost:5001/knowledge-base/${businessId}`);
+      const res = await fetch(`http://localhost:5002/knowledge-base/${businessId}`);
       const data = await res.json();
       setKbContent(data);
       setShowKB(true);
@@ -93,6 +94,14 @@ function App() {
     return <AdminPage onBack={() => setView('directory')} />
   }
 
+  if (view === 'dashboard' && businessId && config) {
+    return <DashboardView
+      businessId={businessId}
+      businessName={config.business_name}
+      onBack={() => setView('chat')}
+    />
+  }
+
   // Chat View
   if (loadingConfig || !config) return <div style={{ color: '#fff', padding: 20 }}>Loading Config...</div>;
 
@@ -105,7 +114,7 @@ function App() {
         <h1 style={{ margin: 0, fontSize: '1.5rem', color: 'var(--text-primary)' }}>{config.business_name}</h1>
         <div style={{ display: 'flex', gap: '10px' }}>
           <button
-            onClick={() => window.open(`http://localhost:5001/dashboard?business_id=${businessId}`, '_blank')}
+            onClick={() => setView('dashboard')}
             className="btn-primary"
             style={{ padding: '5px 15px', fontSize: '0.8rem', backgroundColor: '#333' }}
           >
