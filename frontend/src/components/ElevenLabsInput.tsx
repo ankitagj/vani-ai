@@ -350,6 +350,10 @@ export const ElevenLabsInput: React.FC<VoiceInputProps> = ({ onTranscriptComplet
             const tokenRes = await fetch(`${API_URL}/get-scribe-token`);
             const tokenData = await tokenRes.json();
 
+            if (!tokenRes.ok || tokenData.error) {
+                throw new Error(tokenData.error || `Failed to get token: ${tokenRes.statusText}`);
+            }
+
             await connect({
                 token: tokenData.token,
                 modelId: 'scribe_v2_realtime',
