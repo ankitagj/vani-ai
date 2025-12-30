@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { useScribe } from '@elevenlabs/react';
+import { API_URL } from '../config';
 
 interface VoiceInputProps {
     onTranscriptComplete: (transcript: string, messages?: Message[]) => Promise<any>;
@@ -103,7 +104,7 @@ export const ElevenLabsInput: React.FC<VoiceInputProps> = ({ onTranscriptComplet
 
     const saveConversation = async (ended: boolean = false) => {
         try {
-            await fetch('/save-conversation', {
+            await fetch(`${API_URL}/save-conversation`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({
@@ -260,7 +261,7 @@ export const ElevenLabsInput: React.FC<VoiceInputProps> = ({ onTranscriptComplet
                 try {
                     const sourceBuffer = mediaSource.addSourceBuffer('audio/mpeg');
 
-                    const response = await fetch('/tts', {
+                    const response = await fetch(`${API_URL}/tts`, {
                         method: 'POST',
                         headers: { 'Content-Type': 'application/json' },
                         body: JSON.stringify({ text, language }),
@@ -346,7 +347,7 @@ export const ElevenLabsInput: React.FC<VoiceInputProps> = ({ onTranscriptComplet
         addDebug('Initializing connection...');
 
         try {
-            const tokenRes = await fetch('/get-scribe-token');
+            const tokenRes = await fetch(`${API_URL}/get-scribe-token`);
             const tokenData = await tokenRes.json();
 
             await connect({
