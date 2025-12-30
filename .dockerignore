@@ -1,0 +1,22 @@
+# Exclude huge local folders
+response_generator/
+response_generator_final/
+intent_classifier/
+intent_classifier_final/
+.git/
+node_modules/
+frontend/node_modules/
+businesses/*/transcripts/
+businesses/*/raw_uploads/
+call_recordings/
+processed_audio/
+*.mp4
+*.mp3
+*.wav
+__pycache__/
+*.pyc
+*.pyo
+env/
+venv/
+ai_env/
+.env
