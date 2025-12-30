@@ -347,11 +347,18 @@ export const ElevenLabsInput: React.FC<VoiceInputProps> = ({ onTranscriptComplet
         addDebug('Initializing connection...');
 
         try {
+            addDebug('Fetching token...');
             const tokenRes = await fetch(`${API_URL}/get-scribe-token`);
+            addDebug(`Token Response Status: ${tokenRes.status}`);
             const tokenData = await tokenRes.json();
+            addDebug(`Token Response Data: ${JSON.stringify(tokenData)}`);
 
             if (!tokenRes.ok || tokenData.error) {
                 throw new Error(tokenData.error || `Failed to get token: ${tokenRes.statusText}`);
+            }
+
+            if (!tokenData.token) {
+                throw new Error("Backend returned 200 OK but no 'token' field found in JSON.");
             }
 
             await connect({
