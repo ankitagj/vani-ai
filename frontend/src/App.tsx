@@ -88,7 +88,7 @@ function App() {
   }
 
   if (view === 'setup') {
-    return <SetupPage onComplete={handleSetupComplete} />
+    return <SetupPage onComplete={handleSetupComplete} onBack={() => setView('directory')} />
   }
 
   if (view === 'admin') {

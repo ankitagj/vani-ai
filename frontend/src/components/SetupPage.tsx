@@ -3,9 +3,10 @@ import { API_URL } from '../config';
 
 interface SetupPageProps {
     onComplete: () => void;
+    onBack?: () => void;
 }
 
-const SetupPage: React.FC<SetupPageProps> = ({ onComplete }) => {
+const SetupPage: React.FC<SetupPageProps> = ({ onComplete, onBack }) => {
     const [formData, setFormData] = useState({
         business_name: '',
         agent_name: '',
@@ -166,6 +167,23 @@ const SetupPage: React.FC<SetupPageProps> = ({ onComplete }) => {
     return (
         <div className="container" style={{ marginTop: '40px', maxWidth: '600px', margin: '40px auto' }}>
             <div className="card">
+                {onBack && (
+                    <button
+                        onClick={onBack}
+                        style={{
+                            background: 'transparent',
+                            border: 'none',
+                            color: 'var(--text-secondary)',
+                            cursor: 'pointer',
+                            marginBottom: '10px',
+                            display: 'flex',
+                            alignItems: 'center',
+                            gap: '5px'
+                        }}
+                    >
+                        ← Back to Directory
+                    </button>
+                )}
                 <h1 style={{ marginTop: 0, textAlign: 'center' }}>🤖 AI Agent Setup</h1>
                 <p style={{ color: 'var(--text-secondary)', textAlign: 'center' }}>Configure your detailed business profile.</p>
 
