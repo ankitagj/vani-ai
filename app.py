@@ -10,6 +10,15 @@ from pathlib import Path
 from dotenv import load_dotenv
 from leads_db import get_db
 
+import sys
+# Force UTF-8 encoding for stdout/stderr (Fixes 500 error on Hindi logging in Docker/Railway)
+if sys.version_info >= (3, 7):
+    try:
+        sys.stdout.reconfigure(encoding='utf-8')
+        sys.stderr.reconfigure(encoding='utf-8')
+    except Exception as e:
+        print(f"Failed to set UTF-8 encoding: {e}")
+
 # Load environment variables
 load_dotenv()
 from twilio.rest import Client
