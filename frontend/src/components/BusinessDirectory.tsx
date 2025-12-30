@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from 'react';
+import { API_URL } from '../config';
 
 interface Business {
     id: string;
@@ -17,7 +18,7 @@ const BusinessDirectory: React.FC<BusinessDirectoryProps> = ({ onSelect, onRegis
     const [loading, setLoading] = useState(true);
 
     useEffect(() => {
-        fetch('http://localhost:5002/businesses')
+        fetch(`${API_URL}/businesses`)
             .then(res => res.json())
             .then(data => {
                 setBusinesses(data);

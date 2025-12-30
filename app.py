@@ -24,7 +24,8 @@ app.config['MAX_CONTENT_LENGTH'] = 160 * 1024 * 1024 # 160MB Total Request limit
 # Note: Frontend limits individual files to 10MB. 15 files * 10MB = 150MB.
 
 # Public URL for the backend (Ngrok) - Update this if ngrok restarts!
-SERVER_URL = "https://postpyloric-limnological-danika.ngrok-free.dev"
+# Public URL for the backend
+SERVER_URL = os.environ.get("SERVER_URL", "https://postpyloric-limnological-danika.ngrok-free.dev")
 
 def provision_vapi_number(area_code='408'):
     """Provision a new phone number via Vapi API"""
@@ -1213,6 +1214,7 @@ def vapi_chat_handler():
 if __name__ == '__main__':
     # Ensure logging is set up to show INFO logs
     logging.basicConfig(level=logging.INFO)
-    print("Starting Flask server on port 5002...")
+    port = int(os.environ.get("PORT", 5002))
+    print(f"Starting Flask server on port {port}...")
     # Use threaded=True for better concurrency
-    app.run(host='0.0.0.0', port=5002, debug=False, threaded=True)
+    app.run(host='0.0.0.0', port=port, debug=False, threaded=True)

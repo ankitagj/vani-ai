@@ -3,6 +3,7 @@ import SetupPage from './components/SetupPage';
 import BusinessDirectory from './components/BusinessDirectory';
 import AdminPage from './components/AdminPage';
 import DashboardView from './components/DashboardView';
+import { API_URL } from './config';
 import { useState, useEffect } from 'react';
 
 interface BusinessConfig {
@@ -26,7 +27,7 @@ function App() {
   useEffect(() => {
     if ((view === 'chat' || view === 'dashboard') && businessId) {
       setLoadingConfig(true);
-      fetch(`http://localhost:5002/config/${businessId}`)
+      fetch(`${API_URL}/config/${businessId}`)
         .then(res => res.json())
         .then(data => {
           setConfig(data);
@@ -67,7 +68,7 @@ function App() {
 
   const fetchKB = async () => {
     try {
-      const res = await fetch(`http://localhost:5002/knowledge-base/${businessId}`);
+      const res = await fetch(`${API_URL}/knowledge-base/${businessId}`);
       const data = await res.json();
       setKbContent(data);
       setShowKB(true);

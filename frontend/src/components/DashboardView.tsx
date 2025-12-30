@@ -1,5 +1,6 @@
 
 import React, { useEffect, useState } from 'react';
+import { API_URL } from '../config';
 
 interface DashboardStats {
     stats: {
@@ -31,7 +32,7 @@ const DashboardView: React.FC<DashboardViewProps> = ({ businessId, businessName,
     const [error, setError] = useState<string | null>(null);
 
     useEffect(() => {
-        fetch(`http://localhost:5002/api/dashboard-stats?business_id=${businessId}`)
+        fetch(`${API_URL}/api/dashboard-stats?business_id=${businessId}`)
             .then(res => {
                 if (!res.ok) throw new Error("Failed to fetch stats");
                 return res.json();

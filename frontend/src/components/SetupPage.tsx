@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { API_URL } from '../config';
 
 interface SetupPageProps {
     onComplete: () => void;
@@ -80,7 +81,7 @@ const SetupPage: React.FC<SetupPageProps> = ({ onComplete }) => {
             }
 
             // 2. Save Config & Get Business ID
-            const setupResponse = await fetch('http://localhost:5002/setup', {
+            const setupResponse = await fetch(`${API_URL}/setup`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify(payload),
@@ -98,14 +99,14 @@ const SetupPage: React.FC<SetupPageProps> = ({ onComplete }) => {
                     uploadData.append('file', file);
                 });
 
-                await fetch(`http://localhost:5002/upload-transcripts/${businessId}`, {
+                await fetch(`${API_URL}/upload-transcripts/${businessId}`, {
                     method: 'POST',
                     body: uploadData,
                 });
             }
 
             setStatus('Finalizing Agents...');
-            await fetch('http://localhost:5002/setup', {
+            await fetch(`${API_URL}/setup`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ ...formData, id: businessId, request_new_number: false }),

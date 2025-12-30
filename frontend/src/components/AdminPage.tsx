@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from 'react';
+import { API_URL } from '../config';
 
 interface Business {
     id: string;
@@ -17,7 +18,7 @@ const AdminPage: React.FC<AdminPageProps> = ({ onBack }) => {
 
     const loadBusinesses = () => {
         setLoading(true);
-        fetch('http://localhost:5002/businesses')
+        fetch(`${API_URL}/businesses`)
             .then(res => res.json())
             .then(data => {
                 setBusinesses(data);
@@ -41,7 +42,7 @@ const AdminPage: React.FC<AdminPageProps> = ({ onBack }) => {
         if (!deleteIntent) return;
 
         try {
-            const res = await fetch(`http://localhost:5002/delete-business/${deleteIntent.id}`, {
+            const res = await fetch(`${API_URL}/delete-business/${deleteIntent.id}`, {
                 method: 'DELETE'
             });
             if (res.ok) {
