@@ -281,7 +281,7 @@ class TranscriptQueryAgent:
             # IF WE DON'T KNOW THE NAME -> Ask once
             elif not caller_name and not asked_for_name and current_turn <= 1:
                 # Ask in the FIRST turn ONLY
-                lead_capture_instruction = "IMPORTANT: You MUST ask for their name in this response (e.g., 'May I have your name?'). **DO NOT** ask for their phone number."
+                lead_capture_instruction = "IMPORTANT: Check if the user has provided their name in the latest message. If YES, acknowledge it warmly directly. If NO, please ask for their name (e.g., 'May I have your name?'). **DO NOT** ask for their phone number."
             
             else:
                 # Never ask again, and NEVER ask for phone number
@@ -289,7 +289,7 @@ class TranscriptQueryAgent:
 
             # Determine greeting instruction
             # Only greet if this is the absolute first message (no history)
-            greeting_instruction = "Greet the customer warmly."
+            greeting_instruction = "Greet the customer in ENGLISH (e.g., 'Namaste! Welcome to Rainbow Driving School.'). Do NOT speak Hindi yet."
             if len(conversation_history) > 0:
                 greeting_instruction = "**DO NOT** greet the customer (no 'Hello', 'Hi', 'Namaste', etc.). Go straight to the answer."
             
@@ -313,15 +313,20 @@ CONTEXT FROM PREVIOUS CALL RECORDINGS:
 CUSTOMER QUERY: {query}
 
 CRITICAL INSTRUCTIONS:
-1. **LANGUAGE DETECTION & RESTRICTION**: 
-   - Detect the language of the CUSTOMER QUERY.
-   - **ALLOWED SCRIPTS ONLY**: Latin (English), Devanagari (Hindi), Kannada.
-   - **STRICTLY FORBIDDEN**: Urdu Script (Right-to-Left). NEVER result in Urdu script.
-   - **Handling**:
-     - If user speaks **Hindi** or **Hinglish** (Hindi in Latin) or **Urdu**: Respond in **Hindi (using Devanagari script)**.
-     - If user speaks **Kannada**: Respond in **Kannada**.
-     - If user speaks **English**: Respond in **English**.
-     - If user speaks any other language: Respond in English.
+1. **LANGUAGE MATCHING (HIGHEST PRIORITY)**: 
+   - **RULE**: YOU MUST RESPOND IN THE EXACT SAME LANGUAGE AS THE *LATEST* USER QUERY.
+   - The user may switch languages (e.g., Q1 in English, Q2 in Hindi). **FOLLOW THEM**.
+   - If latest query is **English** -> Respond in **English**.
+     - **CRITICAL**: If English, using Hindi words/script is STRICTLY FORBIDDEN.
+   - If latest query is **Hindi/Hinglish** -> Respond in **Hindi (Devanagari)**.
+   - If latest query is **Kannada** -> Respond in **Kannada**.
+   - **DO NOT** switch to Hindi if the user is currently speaking English.
+   - **ALLOWED SCRIPTS**: Latin (English), Devanagari (Hindi), Kannada.
+   - **EXAMPLES (STRICTLY FOLLOW)**:
+     - ❌ User: "What is the fee?" -> Agent: "Fees hain 2600..." (WRONG - Do not speak Hindi/Hinglish)
+     - ✅ User: "What is the fee?" -> Agent: "The fee is 2600 rupees..." (CORRECT)
+     - ❌ User: "Address kya hai?" -> Agent: "Address is near..." (WRONG - Do not speak English)
+     - ✅ User: "Address kya hai?" -> Agent: "Address Rainbow School ke paas hai..." (CORRECT)
 2. **TONE & STYLE (CASUAL & NATURAL)**:
    - **General**: Be friendly, warm, and helpful. Talk like a real person, not a robot.
    - **English**: Use contractions (e.g., "I'm", "can't", "we're"). Use simple, spoken English. Avoid formal phrases like "I apologize" (say "Sorry about that") or "Please accept" (say "Here you go").
@@ -362,6 +367,7 @@ Respond as {agent_name} (in Hindi Devanagari if user used Hindi/Hinglish, otherw
                 try:
                     response = self.client.models.generate_content(
                         model=model_name,
+                        config=types.GenerateContentConfig(temperature=0.1),
                         contents=[
                             types.Content(
                                 parts=[

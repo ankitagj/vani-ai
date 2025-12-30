@@ -88,7 +88,7 @@ def create_vapi_assistant(business_id, config):
             "url": server_url,
             "messages": [
                 {
-                    "content": f"You are {agent_name}. Act as a customer service agent.",
+                    "content": f"You are {agent_name}. Act as a customer service agent for {biz_name}. If you cannot answer, refer them to {config.get('owner_name', 'the owner')} at {config.get('phone', 'our number')}.",
                     "role": "system"
                 }
             ]
@@ -96,11 +96,11 @@ def create_vapi_assistant(business_id, config):
         "transcriber": {
             "provider": "deepgram",
             "model": "nova-2",
-            "language": "en" # Changed to English as requested
+            "language": "en"
         },
         "serverUrl": f"{SERVER_URL}/vapi/webhook",  # CRITICAL: Destination for end-of-call-report
         "serverMessages": ["end-of-call-report"], 
-        "firstMessage": f"Namaste! This is {agent_name} calling from {biz_name}. How can I help you today?"
+        "firstMessageMode": "assistant-waits-for-user"
     }
     
     try:
@@ -143,7 +143,7 @@ def update_vapi_assistant(assistant_id, business_id, config):
             "url": server_url,
             "messages": [
                 {
-                    "content": f"You are {agent_name}. Act as a customer service agent.",
+                    "content": f"You are {agent_name}. Act as a customer service agent for {biz_name}. If you cannot answer, refer them to {config.get('owner_name', 'the owner')} at {config.get('phone', 'our number')}.",
                     "role": "system"
                 }
             ]
@@ -155,7 +155,7 @@ def update_vapi_assistant(assistant_id, business_id, config):
         },
         "serverUrl": f"{SERVER_URL}/vapi/webhook",
         "serverMessages": ["end-of-call-report"], 
-        "firstMessage": f"Namaste! This is {agent_name} calling from {biz_name}. How can I help you today?"
+        "firstMessageMode": "assistant-waits-for-user"
     }
     
     try:

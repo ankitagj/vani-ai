@@ -215,8 +215,9 @@ const SetupPage: React.FC<SetupPageProps> = ({ onComplete }) => {
                             style={{ backgroundColor: 'rgba(255,255,255,0.05)', color: 'white' }}
                         >
                             <optgroup label="🇮🇳 Best for Hindi/Indian Context">
-                                <option value="5Q0t7uMcjvnagumLfvZi">Sarah (Female) - Recommended</option>
-                                <option value="pqHfZKP75CvOlQylNhV4">Bill (Male) - Deep/Trustworthy</option>
+                                <option value="2F1KINpxsttim2WfMbVs">Aaliyah (Female) - Native Hindi</option>
+                                <option value="amiAXapsDOAiHJqbsAZj">Priya (Female) - Energetic</option>
+                                <option value="KKgHPEa32cUf930vw7QR">Gaurav (Male) - Standard</option>
                             </optgroup>
 
                             <optgroup label="🇺🇸 American English">
