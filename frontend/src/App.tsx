@@ -42,7 +42,7 @@ function App() {
 
   const handleTranscriptComplete = async (transcript: string, messages: any[] = []) => {
     try {
-      const response = await fetch('/ask-mom', {
+      const response = await fetch(`${API_URL}/ask-mom`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
