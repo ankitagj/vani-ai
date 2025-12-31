@@ -321,8 +321,6 @@ class TranscriptQueryAgent:
 CONTEXT FROM PREVIOUS CALL RECORDINGS:
 {context}
 
-CUSTOMER QUERY: {query}
-
 CRITICAL INSTRUCTIONS:
 1. **LANGUAGE MATCHING (HIGHEST PRIORITY)**: 
    - **RULE**: YOU MUST RESPOND IN THE EXACT SAME LANGUAGE AS THE *LATEST* USER QUERY.
@@ -363,8 +361,11 @@ CRITICAL INSTRUCTIONS:
      - ✅ "FEES: दो हज़ार छह सौ रुपये" -> TTS reads "Do Hazaar Chhe Sau Rupye" (Good)
      - ✅ "Date: 15 taareekh" -> "पंद्रह तारीख"
    - **English**: Digits are okay, but words are safer for prices (e.g., "2600 rupees" or "twenty-six hundred rupees").
-8. **GREETING**: {greeting_instruction}
+6. **GREETING**: {greeting_instruction}
 {behavior_instruction}
+
+CUSTOMER QUERY: {query}
+
 Respond as {agent_name} (in Hindi Devanagari if user used Hindi/Hinglish, otherwise English):"""
         
             # Generate response with retries
