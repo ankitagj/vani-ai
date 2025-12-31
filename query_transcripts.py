@@ -299,7 +299,7 @@ class TranscriptQueryAgent:
                 lead_capture_instruction = "**DO NOT** ask for name or phone number. Focus on the query."
 
             # Determine greeting instruction/ending
-            greeting_instruction = "Greet the customer in ENGLISH (e.g., 'Namaste! Welcome to Rainbow Driving School.')."
+            greeting_instruction = "Greet the customer in ENGLISH (e.g., 'Hello! Welcome to Rainbow Driving School.'). Only switch to Hindi if the user speaks Hindi first."
             ending_instruction = "If the user says 'thank you', 'bye', or indicates they are done, politely say goodbye (e.g., 'Thank you for calling Rainbow Driving School. Have a safe day!')."
             
             if len(conversation_history) > 0:
@@ -326,11 +326,10 @@ CRITICAL INSTRUCTIONS:
 1. **LANGUAGE MATCHING (HIGHEST PRIORITY)**: 
    - **RULE**: YOU MUST RESPOND IN THE EXACT SAME LANGUAGE AS THE *LATEST* USER QUERY.
    - The user may switch languages (e.g., Q1 in English, Q2 in Hindi). **FOLLOW THEM**.
-   - If latest query is **English** -> Respond in **English**.
-     - **CRITICAL**: If English, using Hindi words/script is STRICTLY FORBIDDEN.
+   - If latest query is **English** (or "Hello", "Hi") -> Respond in **English**.
    - If latest query is **Hindi/Hinglish** -> Respond in **Hindi (Devanagari)**.
    - If latest query is **Kannada** -> Respond in **Kannada**.
-   - **DO NOT** switch to Hindi if the user is currently speaking English.
+   - **CRITICAL**: Do NOT stick to Hindi if the user switches to English. Always follow the LATEST query's language.
    - **ALLOWED SCRIPTS**: Latin (English), Devanagari (Hindi), Kannada.
    - **EXAMPLES (STRICTLY FOLLOW)**:
      - ❌ User: "What is the fee?" -> Agent: "Fees hain 2600..." (WRONG - Do not speak Hindi/Hinglish)

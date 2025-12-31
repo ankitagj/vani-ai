@@ -1230,7 +1230,7 @@ def vapi_chat_handler():
         existing = db.get_conversation(call_id)
         if not existing:
              # Create with correct business ID
-             db.create_conversation(session_id=call_id, business_id=business_id, language='Hindi')
+             db.create_conversation(session_id=call_id, business_id=business_id, language='English')
         
         # 1. Extract messages
         messages = data.get('messages', [])
