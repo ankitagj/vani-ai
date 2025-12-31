@@ -594,6 +594,23 @@ def setup_business():
                                 break
                 except Exception as ex:
                     logger.warning(f"Failed to fetch linked phone: {ex}")
+
+                # 4. FINAL FALLBACK: AUTO-PROVISION IF STILL MISSING
+                # If we still don't have a phone, create one now.
+                if not data.get('deployment_phone'):
+                     logger.info("No existing phone found. Auto-provisioning new number...")
+                     prov_result = provision_vapi_number()
+                     if prov_result:
+                         new_phone = prov_result.get('number')
+                         vapi_phone_id = prov_result.get('id')
+                         data['deployment_phone'] = new_phone
+                         data['vapi_phone_id'] = vapi_phone_id
+                         
+                         # Bind it
+                         bind_vapi_number(vapi_phone_id, assistant_id)
+                         logger.info(f"Auto-provisioned number: {new_phone}")
+                     else:
+                         logger.error("Auto-provisioning failed.")
             
         with open(biz_dir / "business_config.json", 'w') as f:
             json.dump(data, f, indent=2)
