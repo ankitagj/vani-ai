@@ -23,6 +23,10 @@ if sys.version_info >= (3, 7):
 load_dotenv()
 from twilio.rest import Client
 
+# Initialize Logger
+logging.basicConfig(level=logging.INFO)
+logger = logging.getLogger(__name__)
+
 # Initialize Flask app
 app = Flask(__name__)
 # Allow CORS for localhost:5173 specifically for cookie/auth if needed, or *
