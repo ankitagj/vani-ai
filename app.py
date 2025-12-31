@@ -333,48 +333,8 @@ def vapi_webhook_handler():
                     call_id = call.get('id')
                     if call_id:
                         logger.info(f"Triggering background lead extraction for Call ID: {call_id}")
-                        
-                        def extract_lead_worker(session_id, biz_id, caller_num=None):
-                            try:
-                                db = get_db()
-                                # Get conversation to ensure we have messages
-                                conv = db.get_conversation(session_id)
-                                if not conv:
-                                    logger.warning(f"Conversation not found for extraction: {session_id}")
-                                    return
-                                    
-                                messages = json.loads(conv['messages'])
-                                if not messages:
-                                    logger.warning(f"No messages to analyze for {session_id}")
-                                    return
-                                    
-                                agent = get_agent(biz_id)
-                                if not agent:
-                                    logger.error(f"Agent not found for {biz_id}")
-                                    return
-                                    
-                                # Pass caller_num to prioritize physical ID
-                                lead_info = agent.extract_lead_info(messages, caller_number=caller_num)
-                                
-                                # Update DB
-                                db.update_conversation(
-                                    session_id=session_id,
-                                    messages=messages, # Pass existing messages
-                                    customer_name=lead_info.get('customer_name'),
-                                    customer_phone=lead_info.get('customer_phone'),
-                                    summary=lead_info.get('summary'),
-                                    lead_classification=lead_info.get('lead_classification'),
-                                    ended=True
-                                )
-                                logger.info(f"Vapi Lead Extraction Complete for {session_id}")
-                                
-                            except Exception as ex:
-                                logger.error(f"Vapi Extraction Failed: {ex}")
-
-                        import threading
-                        thread = threading.Thread(target=extract_lead_worker, args=(call_id, business['id'], caller_number))
-                        thread.daemon = True
-                        thread.start()
+                        # Use shared helper
+                        trigger_lead_extraction(call_id, business['id'], caller_number)
                 else:
                     logger.warning(f"Could not find business for assistant ID: {assistant_id}")
             
@@ -1240,76 +1200,109 @@ def vapi_chat_handler():
                 response_chunk = {
                     "id": chunk_id,
                     "object": "chat.completion.chunk",
-                    "created": created,
-                    "model": "savita-devi-v1",
-                    "choices": [
-                        {
-                            "index": 0,
-                            "delta": {
-                                "content": agent_reply
-                            },
-                            "finish_reason": None
-                        }
-                    ]
-                }
-                yield f"data: {json.dumps(response_chunk)}\n\n"
+                   # Prepare messages for the Agent
+        # OpenAI schema: {"messages": [{"role": "...", "content": "..."}]}
+        messages = data.get('messages', [])
+        
+        # Get Call ID as Session ID
+        # Vapi passes call info in the 'call' object usually, but in OpenAI format it might be in metadata?
+        # Vapi adds 'call' object to the body
+        call_info = data.get('call', {})
+        session_id = call_info.get('id')
+        
+        # If no session ID (e.g. test via Curl), generate one
+        if not session_id:
+            import uuid
+            session_id = f"test_{uuid.uuid4()}"
+            
+        logger.info(f"Vapi Chat Request for {business_id} (Session: {session_id})")
+        
+        # Initialize Agent
+        agent = get_agent(business_id)
+        if not agent:
+             return jsonify({
+                 "id": "chatcmpl-error",
+                 "object": "chat.completion",
+                 "created": int(time.time()),
+                 "choices": [{
+                     "index": 0,
+                     "message": {
+                         "role": "assistant",
+                         "content": "One moment please, I am connecting to the business system."
+                     },
+                     "finish_reason": "stop"
+                 }]
+             }), 200 # Don't error out Vapi, just answer politely
+        
+        # Extract last user message
+        last_user_msg = ""
+        conversation_history = []
+        for m in messages:
+            if m.get('role') == 'user':
+                last_user_msg = m.get('content', '')
+            conversation_history.append({"role": m.get('role'), "text": m.get('content', '')})
+            
+        # Generate Answer
+        result = agent.answer_query(last_user_msg, conversation_history=conversation_history)
+        answer = result.get('answer', "I'm sorry, I didn't catch that.")
+        
+        # === DB PERSISTENCE (Fix for Dashboard) ===
+        try:
+            db = get_db()
+            existing_conv = db.get_conversation(session_id)
+            
+            # Append current turn
+            conversation_history.append({"role": "assistant", "text": answer})
+            
+            # Since Vapi sends FULL history every time, we can just purely overwrite the record
+            # But we also want to catch metadata like caller phone number if available
+            caller_phone = None
+            if call_info.get('customer'):
+                 caller_phone = call_info.get('customer').get('number')
+            
+            if existing_conv:
+                # Update messages and potentially phone if we just got it
+                # We do NOT overwrite customer_name blindly (it might have been extracted already)
+                db.update_conversation(
+                    session_id=session_id, 
+                    messages=conversation_history,
+                    customer_phone=caller_phone
+                )
+            else:
+                db.create_conversation(session_id, language="English", business_id=business_id)
+                db.update_conversation(
+                    session_id=session_id, 
+                    messages=conversation_history,
+                    customer_phone=caller_phone
+                )
                 
-                # STOP
-                stop_chunk = {
-                    "id": chunk_id,
-                    "object": "chat.completion.chunk",
-                    "created": created,
-                    "model": "savita-devi-v1",
-                    "choices": [
-                        {
-                            "index": 0,
-                            "delta": {},
-                            "finish_reason": "stop"
-                        }
-                    ]
-                }
-                yield f"data: {json.dumps(stop_chunk)}\n\n"
-                yield "data: [DONE]\n\n"
+            # Optional: Real-time lead extraction on every turn? 
+            # might be too heavy/expensive for voice calls which have many turns.
+            # Best to rely on Webhook for final analysis, OR do it every 5 turns?
+            # Let's do it on the Webhook for voice to save latency/cost.
+            
+        except Exception as db_e:
+            logger.error(f"DB Error in vapi_chat: {db_e}")
 
-            return Response(generate_stream(), mimetype='text/event-stream')
-
-        # 6. Fallback to Non-Streaming if explicitly not requested (though unlikely for Vapi)
+        # Return OpenAI-compatible response
         return jsonify({
-            "id": "chatcmpl-" + str(int(time.time())),
+            "id": "chatcmpl-123",
             "object": "chat.completion",
             "created": int(time.time()),
-            "model": "savita-devi-v1",
-            "choices": [
-                {
-                    "index": 0,
-                    "message": {
-                        "role": "assistant",
-                        "content": agent_reply
-                    },
-                    "finish_reason": "stop"
-                }
-            ],
-            "usage": {
-                "prompt_tokens": 0,
-                "completion_tokens": 0,
-                "total_tokens": 0
-            }
+            "model": "gpt-3.5-turbo",
+            "choices": [{
+                "index": 0,
+                "message": {
+                    "role": "assistant",
+                    "content": answer
+                },
+                "finish_reason": "stop"
+            }]
         })
-        
+
     except Exception as e:
-        logger.error(f"Vapi Handler Error: {str(e)}")
-        import traceback
-        traceback.print_exc()
-        return jsonify({
-             "choices": [
-                {
-                    "message": {
-                        "role": "assistant",
-                        "content": "I apologize, I am experiencing a technical issue. Please call back later."
-                    }
-                }
-            ]
-        }), 500
+        logger.error(f"Vapi Chat Error: {e}")
+        return jsonify({"error": str(e)}), 500
 
 if __name__ == '__main__':
     # Ensure logging is set up to show INFO logs
