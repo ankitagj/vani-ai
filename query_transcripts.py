@@ -379,8 +379,9 @@ CUSTOMER QUERY: {query}
    - If Hindi/Hinglish: Target Language = **HINDI**.
    - If Kannada: Target Language = **KANNADA**.
 
-2. **EXTRACT FACTS**: Look at the `CONTEXT` section.
-   - Ignore the *language* of the context. Focus only on the *information* (facts, numbers, prices).
+2. **EXTRACT FACTS**:
+   - **IF GREETING ONLY** (e.g. "Hello", "Hi"): **SKIP FACT EXTRACTION**. Just return a polite greeting (e.g. "Hello! How can I help you today?").
+   - **IF QUESTION**: Look at the `CONTEXT` section. Ignore the *language* of the context. Focus only on the *information* (facts, numbers, prices).
 
 3. **TRANSLATE & FORMULATE**: 
    - IF Target Language is **ENGLISH** but Context is **HINDI**: You **MUST TRANSLATE** the facts into English.
