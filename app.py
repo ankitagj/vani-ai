@@ -383,6 +383,46 @@ def vapi_webhook_handler():
         logger.error(f"Webhook error: {e}")
         return jsonify({"error": str(e)}), 500
 
+def trigger_lead_extraction(session_id, business_id, caller_num=None):
+    """Refactored helper to trigger async lead extraction"""
+    def extract_lead_worker(sid, biz_id, num):
+        try:
+            db = get_db()
+            conv = db.get_conversation(sid)
+            if not conv:
+                return
+            
+            messages = json.loads(conv['messages'])
+            if not messages:
+                return
+                
+            agent = get_agent(biz_id)
+            if not agent:
+                return
+                
+            # Pass caller_num to prioritize physical ID
+            lead_info = agent.extract_lead_info(messages, caller_number=num)
+            
+            # Update DB
+            db.update_conversation(
+                session_id=sid,
+                messages=messages, 
+                customer_name=lead_info.get('customer_name'),
+                customer_phone=lead_info.get('customer_phone'),
+                summary=lead_info.get('summary'),
+                lead_classification=lead_info.get('lead_classification'),
+                ended=True # For web chats, we treat every analysis as a potential "end" or just latest state
+            )
+            logger.info(f"Lead Extraction Complete for {sid}")
+            
+        except Exception as ex:
+            logger.error(f"Extraction Failed: {ex}")
+
+    import threading
+    thread = threading.Thread(target=extract_lead_worker, args=(session_id, business_id, caller_num))
+    thread.daemon = True
+    thread.start()
+
 # Helper to read config for a specific business
 def get_business_config(business_id):
     path = Path(f"businesses/{business_id}/business_config.json")
@@ -733,7 +773,48 @@ def handle_query():
         # Add 'response' key for compatibility
         if 'answer' in result:
             result['response'] = result['answer']
-        
+
+        # === DATA PERSISTENCE & ANALYTICS ===
+        session_id = data.get('session_id')
+        if session_id:
+            try:
+                db = get_db()
+                existing_conv = db.get_conversation(session_id)
+                
+                # Append new interaction to messages
+                # Messages from frontend already include history, but let's be safe
+                # Actually, frontend sends FULL history. So we just update the record with latest messages + new answer.
+                
+                # We need to append the ASSISTANT'S response to the history before saving
+                updated_messages = list(messages) 
+                # (User query is already in 'messages' from frontend? 
+                # No, usually frontend sends history *before* this query, or *including* this query? 
+                # Standard pattern: User sends history + current query separately, or history includes current query?
+                # Looking at App.tsx: handleTranscriptComplete(transcript, messages) 
+                # It sends transcript AND messages. 'messages' usually implies *previous* history.
+                # Let's assume 'messages' is history. We need to append User Query + Assistant Response.)
+                
+                # Wait, 'messages' param in App.tsx might be everything. 
+                # Let's trust what Frontend sends as 'messages' is the history so far.
+                # But we must add the CURRENT interaction.
+                
+                updated_messages.append({"role": "user", "text": query})
+                updated_messages.append({"role": "assistant", "text": result['answer']})
+                
+                if existing_conv:
+                    db.update_conversation(session_id, updated_messages)
+                else:
+                    db.create_conversation(session_id, language="English", business_id=business_id)
+                    db.update_conversation(session_id, updated_messages) # Save messages
+                
+                # Trigger Analysis (Lead Extraction)
+                # We trigger it on every turn for real-time updates? Or just sporadically?
+                # For now, trigger every turn so dashboard updates fast.
+                trigger_lead_extraction(session_id, business_id)
+                
+            except Exception as db_e:
+                logger.error(f"DB Error in handle_query: {db_e}")
+
         return jsonify(result)
         
     except Exception as e:

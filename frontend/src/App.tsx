@@ -23,6 +23,9 @@ function App() {
   const [showKB, setShowKB] = useState(false);
   const [kbContent, setKbContent] = useState<any>(null);
 
+  // Generate a persistent session ID for this page load
+  const [sessionId] = useState(() => `web_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`);
+
   // Load config when entering chat or dashboard mode
   useEffect(() => {
     if ((view === 'chat' || view === 'dashboard') && businessId) {
@@ -48,7 +51,8 @@ function App() {
         body: JSON.stringify({
           transcript,
           messages,
-          business_id: businessId
+          business_id: businessId,
+          session_id: sessionId
         }),
       });
 
