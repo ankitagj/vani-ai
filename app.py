@@ -192,7 +192,7 @@ def update_vapi_assistant(assistant_id, business_id, config):
         "transcriber": {
             "provider": "deepgram",
             "model": "nova-2",
-            "language": "en"
+            "language": "multi"
         },
         "serverUrl": f"{SERVER_URL}/vapi/webhook",
         "serverMessages": ["end-of-call-report"], 
