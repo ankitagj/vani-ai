@@ -116,8 +116,6 @@ def create_vapi_assistant(business_id, config):
         "firstMessageMode": "assistant-waits-for-user"
     }
     
-    }
-    
     try:
         url = "https://api.vapi.ai/assistant"
         headers = {"Authorization": f"Bearer {api_key}", "Content-Type": "application/json"}
