@@ -89,8 +89,11 @@ const SetupPage: React.FC<SetupPageProps> = ({ onComplete, onBack }) => {
                 body: JSON.stringify(payload),
             });
 
-            if (!setupResponse.ok) throw new Error('Setup failed');
             const setupData = await setupResponse.json();
+            if (!setupResponse.ok) {
+                throw new Error(setupData.error || 'Setup failed');
+            }
+
             const businessId = setupData.business_id;
 
             // 2. Upload Transcripts (if any)
@@ -123,9 +126,9 @@ const SetupPage: React.FC<SetupPageProps> = ({ onComplete, onBack }) => {
             });
             setActivationTimeLeft(120); // Start 2 minute timer
 
-        } catch (error) {
+        } catch (error: any) {
             console.error(error);
-            setStatus('Error during setup. Please check console.');
+            setStatus(`Error: ${error.message}`);
         } finally {
             setLoading(false);
         }
