@@ -327,6 +327,7 @@ CRITICAL INSTRUCTIONS:
    - **RULE**: YOU MUST RESPOND IN THE EXACT SAME LANGUAGE AS THE *LATEST* USER QUERY.
    - The user may switch languages (e.g., Q1 in English, Q2 in Hindi). **FOLLOW THEM**.
    - If latest query is **English** (or "Hello", "Hi") -> Respond in **English**.
+     - **CRITICAL**: Do NOT translate the answer to Hindi if the query is in English. Keep it 100% English.
    - If latest query is **Hindi/Hinglish** -> Respond in **Hindi (Devanagari)**.
    - If latest query is **Kannada** -> Respond in **Kannada**.
    - **CRITICAL**: Do NOT stick to Hindi if the user switches to English. Always follow the LATEST query's language.
