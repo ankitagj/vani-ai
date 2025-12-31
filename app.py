@@ -98,6 +98,7 @@ def create_vapi_assistant(business_id, config):
         "voice": {
             "provider": "11labs",
             "voiceId": voice_id,
+            "model": "eleven_turbo_v2_5"
         },
         "model": {
             "provider": "custom-llm",
@@ -177,6 +178,7 @@ def update_vapi_assistant(assistant_id, business_id, config):
         "voice": {
             "provider": "11labs",
             "voiceId": voice_id,
+            "model": "eleven_turbo_v2_5"
         },
         "model": {
             "provider": "custom-llm",
