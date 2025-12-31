@@ -298,9 +298,10 @@ class TranscriptQueryAgent:
                 # Never ask again, and NEVER ask for phone number
                 lead_capture_instruction = "**DO NOT** ask for name or phone number. Focus on the query."
 
-            # Determine greeting instruction
-            # Only greet if this is the absolute first message (no history)
-            greeting_instruction = "Greet the customer in ENGLISH (e.g., 'Namaste! Welcome to Rainbow Driving School.'). Do NOT speak Hindi yet."
+            # Determine greeting instruction/ending
+            greeting_instruction = "Greet the customer in ENGLISH (e.g., 'Namaste! Welcome to Rainbow Driving School.')."
+            ending_instruction = "If the user says 'thank you', 'bye', or indicates they are done, politely say goodbye (e.g., 'Thank you for calling Rainbow Driving School. Have a safe day!')."
+            
             if len(conversation_history) > 0:
                 greeting_instruction = "**DO NOT** greet the customer (no 'Hello', 'Hi', 'Namaste', etc.). Go straight to the answer."
             
@@ -362,6 +363,7 @@ CRITICAL INSTRUCTIONS:
      - ✅ "Date: 15 taareekh" -> "पंद्रह तारीख"
    - **English**: Digits are okay, but words are safer for prices (e.g., "2600 rupees" or "twenty-six hundred rupees").
 6. **GREETING**: {greeting_instruction}
+7. **ENDING**: {ending_instruction}
 {behavior_instruction}
 
 CUSTOMER QUERY: {query}
