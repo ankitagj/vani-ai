@@ -7,32 +7,32 @@ export default defineConfig({
   server: {
     proxy: {
       '/ask-mom': {
-        target: 'http://127.0.0.1:5001',
+        target: 'http://127.0.0.1:5002',
         changeOrigin: true,
         secure: false,
       },
       '/health': {
-        target: 'http://127.0.0.1:5001',
+        target: 'http://127.0.0.1:5002',
         changeOrigin: true,
         secure: false,
       },
       '/get-scribe-token': {
-        target: 'http://127.0.0.1:5001',
+        target: 'http://127.0.0.1:5002',
         changeOrigin: true,
         secure: false,
       },
       '/tts': {
-        target: 'http://127.0.0.1:5001',
+        target: 'http://127.0.0.1:5002',
         changeOrigin: true,
         secure: false,
       },
       '/save-conversation': {
-        target: 'http://127.0.0.1:5001',
+        target: 'http://127.0.0.1:5002',
         changeOrigin: true,
         secure: false,
       },
       '/dashboard': {
-        target: 'http://127.0.0.1:5001',
+        target: 'http://127.0.0.1:5002',
         changeOrigin: true,
         secure: false,
       }

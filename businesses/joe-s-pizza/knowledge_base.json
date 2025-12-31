@@ -1,0 +1,50 @@
+{
+  "business_info": {
+    "name": "Domino's Pizza",
+    "owner": null,
+    "phone": "(408) 298-3030",
+    "address": "San Jose, California (Multiple Locations)",
+    "services": [
+      "Pizza Delivery",
+      "Pizza Carryout",
+      "Carside Delivery"
+    ]
+  },
+  "qa_pairs": [
+    {
+      "category": "Pricing",
+      "question": "What are the deals and pricing?",
+      "answer": "Domino's offers a Mix & Match deal where you can choose 2 or more items (Medium 2-topping pizzas, Breads, Salads, Chicken, Sandwiches, or Pasta) for $6.99 each. There's also a weeklong carryout special for Large 1-topping pizzas at $7.99 (carryout only). Delivery fees are separate and typically range from $4.99 to $6.99, and do not go to the driver."
+    },
+    {
+      "category": "Hours of Operation",
+      "question": "What are the hours of operation?",
+      "answer": "Hours vary by location. For example, the Domino's at 576 E Santa Clara St (95112) is open until 1:00 AM (Sun-Thu) and 2:00 AM (Fri-Sat). Other locations are generally open until 12:00 AM."
+    },
+    {
+      "category": "Payment Options",
+      "question": "What forms of payment do you accept?",
+      "answer": "We accept cash, credit cards (Visa, MC, Amex, Discover), and Domino's Gift Cards."
+    },
+    {
+      "category": "Menu Options",
+      "question": "What crust options are available?",
+      "answer": "We offer Hand Tossed, Thin Crust, Brooklyn Style, Handmade Pan, and Gluten-Free (Small only) crust options."
+    },
+    {
+      "category": "Rewards Program",
+      "question": "How does the Domino's Rewards program work?",
+      "answer": "Customers earn 10 points per order of $10 or more. 20 Points can be redeemed for a Free Dipping Cup or 16pc Parmesan Bread Bites. 40 Points: Free Stuffed Cheesy Bread or Bread Twists. 60 Points: Free Medium 2-Topping Pizza, Pasta, or Sandwich."
+    },
+    {
+      "category": "Order Issues",
+      "question": "What should I do if my order is late, wrong, or cold?",
+      "answer": "If your order is late, we apologize and will check the Domino's Tracker. If the food is wrong or cold, we offer to remake the item for delivery/pickup or provide a store credit for a future order."
+    },
+    {
+      "category": "Order Cancellation",
+      "question": "Can I cancel my order?",
+      "answer": "Orders can be cancelled if they have not yet entered the oven."
+    }
+  ]
+}

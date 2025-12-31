@@ -1,0 +1,17 @@
+{
+  "business_name": "Joe's Pizza",
+  "agent_name": "3dots",
+  "owner_name": "Joe Smith",
+  "phone": "1234123412",
+  "location": "San Jose",
+  "deployment_phone": "",
+  "request_new_number": false,
+  "agent_behavior": "",
+  "voice_gender": "no_preference",
+  "voice_id": "29vD33N1CtxCmqQRPOHJ",
+  "custom_voice_id_val": "",
+  "id": "joe-s-pizza",
+  "onboarding_status": "complete",
+  "elevenlabs_voice_id": "29vD33N1CtxCmqQRPOHJ",
+  "vapi_phone_id": "7a56b438-cf13-4c77-8ee2-3823b72e931c"
+}

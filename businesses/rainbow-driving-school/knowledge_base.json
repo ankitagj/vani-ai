@@ -1,0 +1,45 @@
+{
+  "business_info": {
+    "name": "Rainbow Driving School",
+    "owner": "Priya (Implied)",
+    "phone": "Not explicitly mentioned in the transcripts",
+    "address": "Karneshwar Nagar, Near KB Kalyana Mantapa, Opposite Royal Daddoo Store on New Jodi Road. Near Jagadevi Store and Rainbow Paradise Building. Google Maps location available but sometimes not shared due to misuse.",
+    "services": [
+      "Two-wheeler training",
+      "License assistance through neighbor (Two-wheeler and Four-wheeler)",
+      "Scooty training"
+    ]
+  },
+  "qa_pairs": [
+    {
+      "category": "Pricing",
+      "question": "What are the pricing/packages?",
+      "answer": "The fee for two-wheeler training is 2600 for a 10-day course. This includes the bike and petrol. License assistance is separate and costs 3000 for learning with permanent license for two-wheelers. It costs 5000 for both two-wheeler and four-wheeler license. First installment of 1100 should be paid for admission and the remaining amount can be paid after three days."
+    },
+    {
+      "category": "Scheduling",
+      "question": "What are your hours of operation?",
+      "answer": "The school is open from 9:30 AM to 6:30 PM. Classes are continuous throughout the day."
+    },
+    {
+      "category": "Location",
+      "question": "Where are you located?",
+      "answer": "The school is located in Karneshwar Nagar, near KB Kalyana Mantapa. It is opposite Royal Daddoo Store on New Jodi Road and also near Jagadevi Store and Rainbow Paradise Building. From Ring Road, go to Jevargi Cross, then take the road to Ram Mandir, which leads to Karneshwar Nagar. From Darga, take the road from Hagaraga Cross to Karneshwar Nagar. Google Maps location available but sometimes not shared."
+    },
+    {
+      "category": "Training Details",
+      "question": "How long is the training and what does it include?",
+      "answer": "The training is a 10-day course. It includes basic training and depends on the individual's progress. The school provides the vehicle and petrol. You need to bring a passport-size photo and wear walking shoes."
+    },
+    {
+      "category": "License Assistance",
+      "question": "Do you provide assistance with obtaining a license?",
+      "answer": "The school does not directly provide licenses. However, they can connect you with a neighbor who helps with obtaining licenses for both two-wheelers and four-wheelers. The licensing process is now online."
+    },
+    {
+      "category": "Staffing",
+      "question": "Do you have female instructors?",
+      "answer": "Yes, a female instructor is available. They ensure student safety and prevent unauthorized individuals from interfering during training."
+    }
+  ]
+}

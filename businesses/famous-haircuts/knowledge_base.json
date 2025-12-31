@@ -1,0 +1,61 @@
+{
+  "business_info": {
+    "name": "Wendy\u2019s Salon",
+    "owner": "Wendy",
+    "phone": "408-area code (specific phone number not provided)",
+    "address": "564 E El Camino Real, Sunnyvale, CA 94087",
+    "services": [
+      "Women's Haircut",
+      "Men's Haircut",
+      "Curly Haircut",
+      "Blowout",
+      "Bang/Neck Trim",
+      "Base Color",
+      "All Over Color",
+      "Partial Highlights/Balayage",
+      "Full Highlights/Balayage",
+      "Glaze/Toner",
+      "Keratin Treatment",
+      "Brazilian Blowout",
+      "Thermal Straightening",
+      "Hair Extensions (Tape-in/K-Tips)"
+    ]
+  },
+  "qa_pairs": [
+    {
+      "category": "Pricing",
+      "question": "What are the prices for your services?",
+      "answer": "Our pricing varies depending on the service. Women's haircuts start at $140, men's haircuts vary in price, curly haircuts are $180, and blowouts are $85. Bang/Neck trims are $25. Base color with blowout is $150, all over color with blowout is $200. Partial highlights/Balayage with blowout is $300, full highlights/Balayage with blowout is $400. Glaze/Toner without blowout is $110, Keratin treatment is $375, Brazilian Blowout is $300, and Thermal Straightening is $450. Hair Extensions (Tape-in/K-Tips) range from $300-$400+ and require a consultation. Please note these are starting prices, and exact quotes are provided during the service."
+    },
+    {
+      "category": "Scheduling",
+      "question": "How can I book an appointment?",
+      "answer": "We prefer online bookings through our Square site: https://hairbywendysf.square.site/. A deposit may be required at the time of booking for specific services, typically $10\u2013$25 for smaller services, and more for chemical work."
+    },
+    {
+      "category": "Scheduling",
+      "question": "What is your cancellation policy?",
+      "answer": "We require at least 24 hours' notice for cancellations. Please arrive on time to ensure the full service duration."
+    },
+    {
+      "category": "Hair Extensions",
+      "question": "Do you offer hair extensions?",
+      "answer": "Yes, we offer hair extensions, including tape-in and K-tip extensions, starting from $300 to $400+. A consultation is required to determine the best method and color match. The consultation is free and lasts 30 minutes. For specific quotes, please leave your name and number for Wendy to call you back."
+    },
+    {
+      "category": "Location & Parking",
+      "question": "Where are you located, and is there parking available?",
+      "answer": "We are located at 564 E El Camino Real in Sunnyvale, near the Fair Oaks Ave intersection. Parking is available in the plaza lot."
+    },
+    {
+      "category": "Specialized Services",
+      "question": "What are your specialized services?",
+      "answer": "Wendy\u2019s specializes in high-end transformations, including Balayage, Brazilian Blowouts, and Thermal Straightening."
+    },
+    {
+      "category": "Consultations",
+      "question": "Do you offer consultations?",
+      "answer": "We offer hair extension consultations for free (30 mins) to determine the best method and color match."
+    }
+  ]
+}
