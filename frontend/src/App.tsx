@@ -132,28 +132,20 @@ function App() {
         </div>
       </header>
       <main style={{ position: 'relative' }}>
-        {/* Hackathon Judge Banner */}
-        {config.deployment_phone && (
-          <div style={{
-            backgroundColor: 'rgba(56, 178, 172, 0.15)',
-            border: '1px solid #38b2ac',
-            color: '#81e6d9',
-            padding: '12px 20px',
-            margin: '20px auto 0',
-            maxWidth: '600px',
-            borderRadius: '8px',
-            textAlign: 'center',
-            fontSize: '0.95rem'
-          }}>
-            <p style={{ margin: '0 0 5px 0', fontWeight: 'bold', fontSize: '1.1em' }}>
-              📞 Call the Agent: <a href={`tel:${config.deployment_phone}`} style={{ color: '#fff', textDecoration: 'underline' }}>{config.deployment_phone}</a>
-            </p>
-            <p style={{ margin: '5px 0 0 0', opacity: 0.9, fontSize: '0.9em' }}>
-              This web chat is for API testing only. <br />
-              Please <strong>call the number above</strong> for the full real-time voice experience!
-            </p>
+        {/* API Testing Banner */}
+        <div style={{
+          backgroundColor: '#ff9800',
+          color: '#000',
+          padding: '10px',
+          textAlign: 'center',
+          fontWeight: 'bold',
+          marginBottom: '20px'
+        }}>
+          ⚠️ FOR API TESTING PURPOSE ONLY ⚠️
+          <div style={{ fontSize: '0.9em', marginTop: '5px' }}>
+            To experience the real-time voice AI, please call: <a href={`tel:${config.deployment_phone || config.phone}`} style={{ color: '#000', textDecoration: 'underline' }}>{config.deployment_phone || config.phone || "Number Pending"}</a>
           </div>
-        )}
+        </div>
 
         <ElevenLabsInput
           onTranscriptComplete={handleTranscriptComplete}
