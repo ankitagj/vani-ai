@@ -77,10 +77,11 @@ class TranscriptQueryAgent:
         self.transcripts = self._load_transcripts()
         print(f"📚 Loaded {len(self.transcripts)} transcript files for {business_id}")
         
-        # Try different models in order - prioritize high-reasoning model as requested
+        # Try different models in order - High reasoning model (1.5 Pro) is too slow for Vapi voice
+        # Switching to 2.0 Flash for balance of Speed + Intelligence
         self.models_to_try = [
-            "gemini-1.5-pro",
             "gemini-2.0-flash",
+            "gemini-1.5-pro",
             "gemini-2.0-flash-lite",
             "gemini-flash-latest",
             "gemini-1.5-flash",
