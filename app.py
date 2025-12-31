@@ -1273,99 +1273,9 @@ def vapi_chat_handler():
         # Even if stream=False, Vapi often works better with streaming format or at least handles it.
         # But correctly, if stream=True, we MUST stream.
         
-        if stream_request:
-             # Streaming not fully implemented in this simplified handler
-             # But Vapi might request it. We'll return a non-stream response for now
-             # or implement a basic stream if critical.
-             pass
-
-        # Prepare messages for the Agent
-        # OpenAI schema: {"messages": [{"role": "...", "content": "..."}]}
-        messages = data.get('messages', [])
-        
-        # Get Call ID as Session ID
-        # Vapi passes call info in the 'call' object usually, but in OpenAI format it might be in metadata?
-        # Vapi adds 'call' object to the body
-        call_info = data.get('call', {})
-        session_id = call_info.get('id')
-        
-        # If no session ID (e.g. test via Curl), generate one
-        if not session_id:
-            import uuid
-            session_id = f"test_{uuid.uuid4()}"
-            
-        logger.info(f"Vapi Chat Request for {business_id} (Session: {session_id})")
-        
-        # Initialize Agent
-        agent = get_agent(business_id)
-        if not agent:
-             return jsonify({
-                 "id": "chatcmpl-error",
-                 "object": "chat.completion",
-                 "created": int(time.time()),
-                 "choices": [{
-                     "index": 0,
-                     "message": {
-                         "role": "assistant",
-                         "content": "One moment please, I am connecting to the business system."
-                     },
-                     "finish_reason": "stop"
-                 }]
-             }), 200 # Don't error out Vapi, just answer politely
-        
-        # Extract last user message
-        last_user_msg = ""
-        conversation_history = []
-        for m in messages:
-            if m.get('role') == 'user':
-                last_user_msg = m.get('content', '')
-            conversation_history.append({"role": m.get('role'), "text": m.get('content', '')})
-            
-        # Generate Answer
-        result = agent.answer_query(last_user_msg, conversation_history=conversation_history)
-        answer = result.get('answer', "I'm sorry, I didn't catch that.")
-        
-        # === DB PERSISTENCE (Fix for Dashboard) ===
-        try:
-            db = get_db()
-            existing_conv = db.get_conversation(session_id)
-            
-            # Append current turn
-            conversation_history.append({"role": "assistant", "text": answer})
-            
-            # Since Vapi sends FULL history every time, we can just purely overwrite the record
-            # But we also want to catch metadata like caller phone number if available
-            caller_phone = None
-            if call_info.get('customer'):
-                 caller_phone = call_info.get('customer').get('number')
-            
-            if existing_conv:
-                # Update messages and potentially phone if we just got it
-                # We do NOT overwrite customer_name blindly (it might have been extracted already)
-                db.update_conversation(
-                    session_id=session_id, 
-                    messages=conversation_history,
-                    customer_phone=caller_phone
-                )
-            else:
-                db.create_conversation(session_id, language="English", business_id=business_id)
-                db.update_conversation(
-                    session_id=session_id, 
-                    messages=conversation_history,
-                    customer_phone=caller_phone
-                )
-                
-            # Optional: Real-time lead extraction on every turn? 
-            # might be too heavy/expensive for voice calls which have many turns.
-            # Best to rely on Webhook for final analysis, OR do it every 5 turns?
-            # Let's do it on the Webhook for voice to save latency/cost.
-            
-        except Exception as db_e:
-            logger.error(f"DB Error in vapi_chat: {db_e}")
-
         # Return OpenAI-compatible response
         return jsonify({
-            "id": "chatcmpl-123",
+            "id": "chatcmpl-vapi-response",
             "object": "chat.completion",
             "created": int(time.time()),
             "model": "gpt-3.5-turbo",
@@ -1373,11 +1283,15 @@ def vapi_chat_handler():
                 "index": 0,
                 "message": {
                     "role": "assistant",
-                    "content": answer
+                    "content": agent_reply
                 },
                 "finish_reason": "stop"
             }]
         })
+
+    except Exception as e:
+        logger.error(f"Vapi Chat Error: {e}")
+        return jsonify({"error": str(e)}), 500
 
     except Exception as e:
         logger.error(f"Vapi Chat Error: {e}")
