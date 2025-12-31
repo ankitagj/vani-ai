@@ -12,6 +12,7 @@ interface BusinessConfig {
   greeting_message: string;
   onboarding_status: string;
   deployment_phone?: string;
+  phone?: string;
 }
 
 type View = 'directory' | 'chat' | 'setup' | 'admin' | 'dashboard';
