@@ -371,16 +371,25 @@ CRITICAL INSTRUCTIONS:
 CUSTOMER QUERY: {query}
 
 ---
-FINAL CRITICAL LANGUAGE INSTRUCTIONS:
-1. **LANGUAGE IS #1 PRIORITY**:
-   - Query is **English** (or "Hello", "Hi") -> Answer in **ENGLISH**.
-     - Do NOT use Hindi words. Do NOT translate.
-     - Even if the Knowledge Base/Transcripts are in Hindi, you **MUST TRANSLATE** the answer to English.
-     - Just because the user has an Indian name (e.g. "Venkatesh"), do NOT switch to Hindi.
-   - Query is **Hindi/Hinglish** -> Answer in **Hindi (Devanagari)**.
-   - Query is **Kannada** -> Answer in **Kannada**.
+🛑 **FINAL EXECUTION PROTOCOL (MUST FOLLOW STEP-BY-STEP)** 🛑
 
-Respond as {agent_name} (in Hindi Devanagari if user used Hindi/Hinglish, otherwise English):"""
+1. **DETECT LANGUAGE**: Identify the language of the `CUSTOMER QUERY` (above).
+   - If English (e.g., "Hello", "How much?"): Target Language = **ENGLISH**.
+   - If Hindi/Hinglish: Target Language = **HINDI**.
+   - If Kannada: Target Language = **KANNADA**.
+
+2. **EXTRACT FACTS**: Look at the `CONTEXT` section.
+   - Ignore the *language* of the context. Focus only on the *information* (facts, numbers, prices).
+
+3. **TRANSLATE & FORMULATE**: 
+   - IF Target Language is **ENGLISH** but Context is **HINDI**: You **MUST TRANSLATE** the facts into English.
+   - **CRITICAL**: Do NOT output Hindi words if the User Query is English.
+   - **CRITICAL**: Do NOT assume the user wants Hindi just because of their name (e.g. "Venkatesh").
+
+4. **GENERATE RESPONSE**:
+   - Write the final response strictly in the **Target Language**.
+
+Respond as {agent_name} (in the detected Target Language only):"""
         
             # Generate response with retries
             max_retries = 3
