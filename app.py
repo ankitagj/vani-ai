@@ -113,7 +113,7 @@ def create_vapi_assistant(business_id, config):
         "transcriber": {
             "provider": "deepgram",
             "model": "nova-2",
-            "language": "en"
+            "language": "multi"
         },
         "serverUrl": f"{SERVER_URL}/vapi/webhook",  # CRITICAL: Destination for end-of-call-report
         "serverMessages": ["end-of-call-report"], 
