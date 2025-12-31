@@ -34,7 +34,10 @@ app.config['MAX_CONTENT_LENGTH'] = 160 * 1024 * 1024 # 160MB Total Request limit
 
 # Public URL for the backend (Ngrok) - Update this if ngrok restarts!
 # Public URL for the backend
+# Public URL for the backend
 SERVER_URL = os.environ.get("SERVER_URL", "https://postpyloric-limnological-danika.ngrok-free.dev")
+if SERVER_URL and not SERVER_URL.startswith("http"):
+    SERVER_URL = f"https://{SERVER_URL}"
 
 def provision_vapi_number(area_code='408'):
     """Provision a new phone number via Vapi API"""
