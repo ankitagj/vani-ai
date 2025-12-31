@@ -148,8 +148,8 @@ function App() {
             <p style={{ margin: '0 0 5px 0', fontWeight: 'bold', fontSize: '1.1em' }}>
               📞 Call the Agent: <a href={`tel:${config.deployment_phone}`} style={{ color: '#fff', textDecoration: 'underline' }}>{config.deployment_phone}</a>
             </p>
-            <p style={{ margin: 0, opacity: 0.9, fontSize: '0.9em' }}>
-              👨‍⚖️ <strong>For Judges:</strong> This web chat is for API testing only. <br />
+            <p style={{ margin: '5px 0 0 0', opacity: 0.9, fontSize: '0.9em' }}>
+              This web chat is for API testing only. <br />
               Please <strong>call the number above</strong> for the full real-time voice experience!
             </p>
           </div>
