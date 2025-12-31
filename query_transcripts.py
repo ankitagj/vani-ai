@@ -73,10 +73,9 @@ class TranscriptQueryAgent:
         self.transcripts = self._load_transcripts()
         print(f"📚 Loaded {len(self.transcripts)} transcript files for {business_id}")
         
-        # Try different models in order
-        # Try different models in order - prioritize the one that works (gemini-2.0-flash-exp)
-        self.models_to_try = ["gemini-2.0-flash-exp", "gemini-1.5-flash", "gemini-1.5-pro", "gemini-1.5-flash-8b", "gemini-1.0-pro"]
-        self.model_name = None
+        # Try different models in order - prioritize high-quota production model
+        self.models_to_try = ["gemini-1.5-flash", "gemini-2.0-flash-exp", "gemini-1.5-pro"]
+        self.model_name = "gemini-1.5-flash"
         
         # Cache for context to avoid rebuilding every time
         self.cached_context = None
