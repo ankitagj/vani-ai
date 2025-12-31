@@ -1,4 +1,4 @@
-from flask import Flask, request, jsonify, Response
+from flask import Flask, request, jsonify, Response, stream_with_context
 from flask_cors import CORS
 # from multilingual_customer_service_agent import MultilingualCustomerServiceAgent
 from query_transcripts import TranscriptQueryAgent
@@ -1287,10 +1287,43 @@ def vapi_chat_handler():
         logger.info(f"Vapi Response Generated in {duration:.2f}s: {agent_reply[:50]}...")
         
         # 5. Return Streaming Response (Server-Sent Events)
-        # Even if stream=False, Vapi often works better with streaming format or at least handles it.
-        # But correctly, if stream=True, we MUST stream.
-        
-        # Return OpenAI-compatible response
+        if stream_request:
+            def generate_stream():
+                # Yield the Content
+                chunk_id = f"chatcmpl-{int(time.time())}"
+                
+                # Yield content chunk
+                resp_json = {
+                    "id": chunk_id,
+                    "object": "chat.completion.chunk",
+                    "created": int(time.time()),
+                    "model": "gpt-3.5-turbo",
+                    "choices": [{
+                        "index": 0,
+                        "delta": {"content": agent_reply},
+                        "finish_reason": None
+                    }]
+                }
+                yield f"data: {json.dumps(resp_json)}\n\n"
+                
+                # Yield Finish Chunk
+                finish_json = {
+                    "id": chunk_id,
+                    "object": "chat.completion.chunk",
+                    "created": int(time.time()),
+                    "model": "gpt-3.5-turbo",
+                    "choices": [{
+                        "index": 0,
+                        "delta": {},
+                        "finish_reason": "stop"
+                    }]
+                }
+                yield f"data: {json.dumps(finish_json)}\n\n"
+                yield "data: [DONE]\n\n"
+
+            return Response(stream_with_context(generate_stream()), content_type='text/event-stream')
+
+        # Return standard JSON if stream=False
         return jsonify({
             "id": "chatcmpl-vapi-response",
             "object": "chat.completion",
