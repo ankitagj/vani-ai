@@ -418,7 +418,8 @@ def get_config(business_id):
         "agent_name": config.get("agent_name", "Assistant"),
         "business_name": config.get("business_name", "Business"),
         "greeting_message": config.get("greeting_message", "Hello! How can I help you?"),
-        "onboarding_status": config.get("onboarding_status", "incomplete")
+        "onboarding_status": config.get("onboarding_status", "incomplete"),
+        "deployment_phone": config.get("deployment_phone")
     })
 
 @app.route('/setup', methods=['POST'])
@@ -1187,20 +1188,12 @@ def vapi_chat_handler():
         # But correctly, if stream=True, we MUST stream.
         
         if stream_request:
-            def generate_stream():
-                # Yield the content as a single chunk (or we could split it specifically if needed)
-                # But for now, one fast chunk is fine, the protocol is what matters.
-                chunk_id = "chatcmpl-" + str(int(time.time()))
-                created = int(time.time())
-                
-                # HEAD
-                # yield f"data: {json.dumps({'id': chunk_id, 'object': 'chat.completion.chunk', 'created': created, 'model': 'savita-devi-v1', 'choices': [{'index': 0, 'delta': {'role': 'assistant'}, 'finish_reason': None}]})}\n\n"
-                
-                # CONTENT
-                response_chunk = {
-                    "id": chunk_id,
-                    "object": "chat.completion.chunk",
-                   # Prepare messages for the Agent
+             # Streaming not fully implemented in this simplified handler
+             # But Vapi might request it. We'll return a non-stream response for now
+             # or implement a basic stream if critical.
+             pass
+
+        # Prepare messages for the Agent
         # OpenAI schema: {"messages": [{"role": "...", "content": "..."}]}
         messages = data.get('messages', [])
         

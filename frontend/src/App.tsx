@@ -11,6 +11,7 @@ interface BusinessConfig {
   business_name: string;
   greeting_message: string;
   onboarding_status: string;
+  deployment_phone?: string;
 }
 
 type View = 'directory' | 'chat' | 'setup' | 'admin' | 'dashboard';
@@ -130,7 +131,30 @@ function App() {
           </button>
         </div>
       </header>
-      <main>
+      <main style={{ position: 'relative' }}>
+        {/* Hackathon Judge Banner */}
+        {config.deployment_phone && (
+          <div style={{
+            backgroundColor: 'rgba(56, 178, 172, 0.15)',
+            border: '1px solid #38b2ac',
+            color: '#81e6d9',
+            padding: '12px 20px',
+            margin: '20px auto 0',
+            maxWidth: '600px',
+            borderRadius: '8px',
+            textAlign: 'center',
+            fontSize: '0.95rem'
+          }}>
+            <p style={{ margin: '0 0 5px 0', fontWeight: 'bold', fontSize: '1.1em' }}>
+              📞 Call the Agent: <a href={`tel:${config.deployment_phone}`} style={{ color: '#fff', textDecoration: 'underline' }}>{config.deployment_phone}</a>
+            </p>
+            <p style={{ margin: 0, opacity: 0.9, fontSize: '0.9em' }}>
+              👨‍⚖️ <strong>For Judges:</strong> This web chat is for API testing only. <br />
+              Please <strong>call the number above</strong> for the full real-time voice experience!
+            </p>
+          </div>
+        )}
+
         <ElevenLabsInput
           onTranscriptComplete={handleTranscriptComplete}
           agentName={config.agent_name}
