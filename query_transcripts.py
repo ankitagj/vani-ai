@@ -10,6 +10,10 @@ import json
 from pathlib import Path
 from datetime import datetime
 from typing import List, Dict, Optional
+import logging
+
+logging.basicConfig(level=logging.INFO)
+logger = logging.getLogger(__name__)
 
 try:
     from google import genai
@@ -74,8 +78,14 @@ class TranscriptQueryAgent:
         print(f"📚 Loaded {len(self.transcripts)} transcript files for {business_id}")
         
         # Try different models in order - prioritize high-quota production model
-        self.models_to_try = ["gemini-1.5-flash", "gemini-2.0-flash-exp", "gemini-1.5-pro"]
-        self.model_name = "gemini-1.5-flash"
+        self.models_to_try = [
+            "gemini-2.0-flash",
+            "gemini-2.0-flash-lite",
+            "gemini-flash-latest",
+            "gemini-1.5-flash",
+            "gemini-1.5-pro",
+        ]
+        self.model_name = None
         
         # Cache for context to avoid rebuilding every time
         self.cached_context = None
@@ -209,10 +219,10 @@ class TranscriptQueryAgent:
         if self.model_name:
             return self.model_name
         
-        # Try gemini-1.5-flash first (better quota: 15 RPM vs 10 RPM)
+        print("Model initialization: Testing available models...")
         for model_name in self.models_to_try:
+            print(f"Testing model: {model_name}...")
             try:
-                # Test with a simple query
                 response = self.client.models.generate_content(
                     model=model_name,
                     contents=[types.Content(parts=[types.Part(text="Hello")])]
@@ -221,10 +231,10 @@ class TranscriptQueryAgent:
                 print(f"✅ Using Gemini model: {model_name}")
                 return model_name
             except Exception as e:
+                print(f"❌ Model {model_name} failed: {e}")
                 if "404" in str(e) or "NOT_FOUND" in str(e):
                     continue
                 else:
-                    # For other errors, try next model
                     continue
         
         raise Exception("No working Gemini model found. Please check your API key and quota.")
