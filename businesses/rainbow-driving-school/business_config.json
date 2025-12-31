@@ -13,5 +13,6 @@
   "id": "rainbow-driving-school",
   "onboarding_status": "complete",
   "elevenlabs_voice_id": "amiAXapsDOAiHJqbsAZj",
-  "vapi_phone_id": "0fe124a0-23b6-4442-a052-a1baf507fae7"
+  "vapi_phone_id": "0fe124a0-23b6-4442-a052-a1baf507fae7",
+  "vapi_assistant_id": "430cb37b-e749-4880-81d2-ce7dec0ffe90"
 }
