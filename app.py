@@ -116,9 +116,33 @@ def create_vapi_assistant(business_id, config):
         "firstMessageMode": "assistant-waits-for-user"
     }
     
+    }
+    
     try:
         url = "https://api.vapi.ai/assistant"
         headers = {"Authorization": f"Bearer {api_key}", "Content-Type": "application/json"}
+        
+        # 1. CHECK FOR DUPLICATES: prevent endless creation of same agent
+        # Vapi doesn't have a direct "get by name", so we list and filter.
+        # This keeps our account clean.
+        try:
+            list_url = "https://api.vapi.ai/assistant"
+            existing_list = requests.get(list_url, headers=headers).json()
+            # Depending on Vapi API, it might return a list directly or {'context': ..., 'assistants': ...}
+            # Assuming list for now based on common REST patterns, checking idempotency
+            target_list = existing_list if isinstance(existing_list, list) else existing_list.get('assistants', []) or []
+            
+            for agent in target_list:
+                if agent.get('name') == vapi_name:
+                    logger.info(f"♻️ Found existing Vapi agent '{vapi_name}' ({agent.get('id')}). Reusing it.")
+                    # Update it to ensure new config/URL is applied
+                    update_url = f"https://api.vapi.ai/assistant/{agent.get('id')}"
+                    requests.patch(update_url, json=payload, headers=headers)
+                    return agent, None
+        except Exception as list_err:
+             logger.warning(f"Failed to check existing agents: {list_err}")
+
+        # 2. CREATE NEW if not found
         # logger.info(f"Creating Vapi Assistant with payload: {json.dumps(payload)}")
         response = requests.post(url, json=payload, headers=headers)
         if response.status_code in [200, 201]:
