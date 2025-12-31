@@ -145,7 +145,7 @@ The agent is trained on 10 real call recordings covering:
 
 ## 📝 License
 
-Private project for Rainbow Driving School
+Distributed under the MIT License. See `LICENSE` for more information.
 
 ## 🙏 Acknowledgments
 
