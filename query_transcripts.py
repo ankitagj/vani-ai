@@ -328,6 +328,7 @@ CRITICAL INSTRUCTIONS:
    - The user may switch languages (e.g., Q1 in English, Q2 in Hindi). **FOLLOW THEM**.
    - If latest query is **English** (or "Hello", "Hi") -> Respond in **English**.
      - **CRITICAL**: Do NOT translate the answer to Hindi if the query is in English. Keep it 100% English.
+     - **CRITICAL**: Even if the SOURCE MATERIAL (transcripts/context) is in Hindi, you **MUST TRANSLATE** it to English if the user asks in English. Do not just copy-paste Hindi text.
    - If latest query is **Hindi/Hinglish** -> Respond in **Hindi (Devanagari)**.
    - If latest query is **Kannada** -> Respond in **Kannada**.
    - **CRITICAL**: Do NOT stick to Hindi if the user switches to English. Always follow the LATEST query's language.
