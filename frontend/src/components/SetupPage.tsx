@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { API_URL } from '../config';
 
 interface SetupPageProps {
@@ -66,6 +66,7 @@ const SetupPage: React.FC<SetupPageProps> = ({ onComplete, onBack }) => {
     };
 
     const [setupResult, setSetupResult] = useState<{ phone: string, name: string } | null>(null);
+    const [activationTimeLeft, setActivationTimeLeft] = useState(0);
 
     // ... existing handlers ...
 
@@ -120,6 +121,7 @@ const SetupPage: React.FC<SetupPageProps> = ({ onComplete, onBack }) => {
                 phone: setupData.deployment_phone || formData.deployment_phone || 'N/A',
                 name: formData.business_name
             });
+            setActivationTimeLeft(120); // Start 2 minute timer
 
         } catch (error) {
             console.error(error);
@@ -127,6 +129,20 @@ const SetupPage: React.FC<SetupPageProps> = ({ onComplete, onBack }) => {
         } finally {
             setLoading(false);
         }
+    };
+
+    // Timer Effect
+    useEffect(() => {
+        if (activationTimeLeft > 0 && setupResult) {
+            const timer = setTimeout(() => setActivationTimeLeft(prev => prev - 1), 1000);
+            return () => clearTimeout(timer);
+        }
+    }, [activationTimeLeft, setupResult]);
+
+    const formatTime = (seconds: number) => {
+        const mins = Math.floor(seconds / 60);
+        const secs = seconds % 60;
+        return `${mins}:${secs.toString().padStart(2, '0')}`;
     };
 
     if (setupResult) {
@@ -146,6 +162,19 @@ const SetupPage: React.FC<SetupPageProps> = ({ onComplete, onBack }) => {
                         <p style={{ margin: '10px 0 0 0', fontSize: '2rem', fontWeight: 'bold', color: '#fff', letterSpacing: '1px' }}>
                             {setupResult.phone}
                         </p>
+
+                        {/* Activation Timer */}
+                        <div style={{ marginTop: '15px', padding: '10px', background: activationTimeLeft > 0 ? 'rgba(255, 193, 7, 0.1)' : 'rgba(76, 175, 80, 0.1)', borderRadius: '6px', border: activationTimeLeft > 0 ? '1px solid #ffc107' : '1px solid #4CAF50' }}>
+                            {activationTimeLeft > 0 ? (
+                                <p style={{ margin: 0, color: '#ffc107', fontSize: '0.9rem' }}>
+                                    ⏳ Activating in <strong>{formatTime(activationTimeLeft)}</strong>...
+                                </p>
+                            ) : (
+                                <p style={{ margin: 0, color: '#4CAF50', fontWeight: 'bold', fontSize: '1rem' }}>
+                                    ✅ Number Active & Ready!
+                                </p>
+                            )}
+                        </div>
                     </div>
 
                     <p style={{ color: 'var(--text-secondary)', marginBottom: '30px' }}>
