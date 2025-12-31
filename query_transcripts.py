@@ -77,13 +77,13 @@ class TranscriptQueryAgent:
         self.transcripts = self._load_transcripts()
         print(f"📚 Loaded {len(self.transcripts)} transcript files for {business_id}")
         
-        # Try different models in order - prioritize high-quota production model
+        # Try different models in order - prioritize high-reasoning model as requested
         self.models_to_try = [
+            "gemini-1.5-pro",
             "gemini-2.0-flash",
             "gemini-2.0-flash-lite",
             "gemini-flash-latest",
             "gemini-1.5-flash",
-            "gemini-1.5-pro",
         ]
         self.model_name = None
         
@@ -290,7 +290,8 @@ class TranscriptQueryAgent:
             # IF WE DON'T KNOW THE NAME -> Ask once
             elif not caller_name and not asked_for_name and current_turn <= 1:
                 # Ask in the FIRST turn ONLY
-                lead_capture_instruction = "IMPORTANT: Check if the user has provided their name in the latest message. If YES, acknowledge it warmly directly. If NO, please ask for their name (e.g., 'May I have your name?'). **DO NOT** ask for their phone number."
+                # Ask in the FIRST turn ONLY
+                lead_capture_instruction = "IMPORTANT: First ANSWER the user's query efficiently. THEN, casually ask for their name (e.g., 'By the way, may I know your name?'). **DO NOT** ask for their phone number."
             
             else:
                 # Never ask again, and NEVER ask for phone number

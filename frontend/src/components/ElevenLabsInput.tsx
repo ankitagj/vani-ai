@@ -364,6 +364,8 @@ export const ElevenLabsInput: React.FC<VoiceInputProps> = ({ onTranscriptComplet
             await connect({
                 token: tokenData.token,
                 modelId: 'scribe_v2_realtime',
+                // @ts-ignore - 'language' is supported by Scribe v2 but missing in current react-SDK types
+                language: 'en',
                 microphone: {
                     echoCancellation: true,
                     noiseSuppression: true,
