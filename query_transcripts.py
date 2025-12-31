@@ -326,6 +326,7 @@ CRITICAL INSTRUCTIONS:
 1. **LANGUAGE MATCHING (HIGHEST PRIORITY)**: 
    - **RULE**: YOU MUST RESPOND IN THE EXACT SAME LANGUAGE AS THE *LATEST* USER QUERY.
    - The user may switch languages (e.g., Q1 in English, Q2 in Hindi). **FOLLOW THEM**.
+   - **CRITICAL**: Do NOT assume meaningful names (e.g., "Venkatesh", "Rahul") imply Hindi preference. If the query is English, speak English.
    - If latest query is **English** (or "Hello", "Hi") -> Respond in **English**.
      - **CRITICAL**: Do NOT translate the answer to Hindi if the query is in English. Keep it 100% English.
      - **CRITICAL**: Even if the SOURCE MATERIAL (transcripts/context) is in Hindi, you **MUST TRANSLATE** it to English if the user asks in English. Do not just copy-paste Hindi text.
@@ -368,6 +369,16 @@ CRITICAL INSTRUCTIONS:
 {behavior_instruction}
 
 CUSTOMER QUERY: {query}
+
+---
+FINAL CRITICAL LANGUAGE INSTRUCTIONS:
+1. **LANGUAGE IS #1 PRIORITY**:
+   - Query is **English** (or "Hello", "Hi") -> Answer in **ENGLISH**.
+     - Do NOT use Hindi words. Do NOT translate.
+     - Even if the Knowledge Base/Transcripts are in Hindi, you **MUST TRANSLATE** the answer to English.
+     - Just because the user has an Indian name (e.g. "Venkatesh"), do NOT switch to Hindi.
+   - Query is **Hindi/Hinglish** -> Answer in **Hindi (Devanagari)**.
+   - Query is **Kannada** -> Answer in **Kannada**.
 
 Respond as {agent_name} (in Hindi Devanagari if user used Hindi/Hinglish, otherwise English):"""
         
