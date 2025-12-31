@@ -528,8 +528,34 @@ def setup_business():
                     logger.info("Successfully bound phone number to assistant.")
                 else:
                      logger.error("Failed to bind phone number to assistant.")
-                     # Don't fail setup purely on binding, but warn
-                     # return jsonify({"error": "Failed to bind number"}), 500
+            
+            # 3. IF NO PHONE in config, try to fetch it from Vapi (Associate check)
+            # This is helpful if we reused an assistant that already has a phone bound
+            if not data.get('deployment_phone'):
+                attempts = 0
+                import time
+                found_phone = None
+                
+                # We might need to query the phone numbers endpoint to see which one points to this assistant
+                try:
+                    p_url = "https://api.vapi.ai/phone-number"
+                    p_headers = {"Authorization": f"Bearer {os.environ.get('VAPI_PRIVATE_KEY')}"}
+                    p_resp = requests.get(p_url, headers=p_headers)
+                    if p_resp.status_code == 200:
+                        all_phones = p_resp.json()
+                        # handle inconsistent API return (list vs dict)
+                        if isinstance(all_phones, dict): all_phones = all_phones.get('phoneNumber', [])
+                        
+                        for p in all_phones:
+                            if p.get('assistantId') == assistant_id:
+                                found_phone = p.get('number')
+                                found_id = p.get('id')
+                                logger.info(f"📞 Found existing phone {found_phone} linked to {assistant_id}")
+                                data['deployment_phone'] = found_phone
+                                data['vapi_phone_id'] = found_id
+                                break
+                except Exception as ex:
+                    logger.warning(f"Failed to fetch linked phone: {ex}")
             
         with open(biz_dir / "business_config.json", 'w') as f:
             json.dump(data, f, indent=2)
