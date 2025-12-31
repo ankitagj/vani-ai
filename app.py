@@ -116,15 +116,17 @@ def create_vapi_assistant(business_id, config):
     try:
         url = "https://api.vapi.ai/assistant"
         headers = {"Authorization": f"Bearer {api_key}", "Content-Type": "application/json"}
+        # logger.info(f"Creating Vapi Assistant with payload: {json.dumps(payload)}")
         response = requests.post(url, json=payload, headers=headers)
         if response.status_code in [200, 201]:
-            return response.json()
+            return response.json(), None
         else:
-            logger.error(f"Failed to create assistant: {response.text}")
-            return None
+            error_msg = f"Vapi Error ({response.status_code}): {response.text}"
+            logger.error(error_msg)
+            return None, error_msg
     except Exception as e:
         logger.error(f"Error creating assistant: {e}")
-        return None
+        return None, str(e)
 
 def update_vapi_assistant(assistant_id, business_id, config):
     """Update an existing Vapi Assistant"""
@@ -477,13 +479,18 @@ def setup_business():
         if existing_assistant_id:
             logger.info(f"Updating existing Vapi Assistant: {existing_assistant_id}")
             assistant_result = update_vapi_assistant(existing_assistant_id, biz_id, data)
-            # If update fails (e.g. deleted on Vapi side), fall back to create? 
-            # For now, assume it works or we manually fix.
+            # If update fails, we currently log it but don't hard fail.
+            if not assistant_result:
+                 logger.warning(f"Failed to update assistant {existing_assistant_id}")
         else:
             logger.info("Creating new Vapi Assistant...")
-            assistant_result = create_vapi_assistant(biz_id, data)
+            assistant_result, vapi_error = create_vapi_assistant(biz_id, data)
+            
+            if not assistant_result:
+                # CRITICAL: If creation fails, we must stop and report error
+                logger.error(f"Failed to create Vapi Assistant: {vapi_error}")
+                return jsonify({"error": f"Failed to create Vapi Assistant: {vapi_error}"}), 500
 
-        if assistant_result:
             assistant_id = assistant_result.get('id')
             data['vapi_assistant_id'] = assistant_id
             logger.info(f"Vapi Assistant Ready: {assistant_id}")
@@ -494,9 +501,9 @@ def setup_business():
                 if bind_success:
                     logger.info("Successfully bound phone number to assistant.")
                 else:
-                    logger.error("Failed to bind phone number to assistant.")
-        else:
-            logger.warning("Failed to create Vapi Assistant.")
+                     logger.error("Failed to bind phone number to assistant.")
+                     # Don't fail setup purely on binding, but warn
+                     # return jsonify({"error": "Failed to bind number"}), 500
             
         with open(biz_dir / "business_config.json", 'w') as f:
             json.dump(data, f, indent=2)
