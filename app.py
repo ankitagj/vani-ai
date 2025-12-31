@@ -414,7 +414,41 @@ def get_business_config(business_id):
     path = Path(f"businesses/{business_id}/business_config.json")
     if path.exists():
         with open(path, 'r') as f:
-            return json.load(f)
+            config = json.load(f)
+            
+        # AUTO-SYNC PHONE IF MISSING
+        if not config.get('deployment_phone') and config.get('vapi_assistant_id'):
+            try:
+                # Lazy load check
+                api_key = os.environ.get("VAPI_PRIVATE_KEY")
+                if api_key:
+                    assistant_id = config.get('vapi_assistant_id')
+                    try:
+                        p_url = "https://api.vapi.ai/phone-number"
+                        p_headers = {"Authorization": f"Bearer {api_key}"}
+                        p_resp = requests.get(p_url, headers=p_headers, timeout=5)
+                        if p_resp.status_code == 200:
+                            data = p_resp.json()
+                            phones = data if isinstance(data, list) else data.get('phoneNumber', []) or []
+                            # Fallback for Vapi wrapping
+                            
+                            found_phone = None
+                            for p in phones:
+                                if p.get('assistantId') == assistant_id:
+                                    found_phone = p.get('number')
+                                    break
+                            
+                            if found_phone:
+                                logger.info(f"Auto-synced phone {found_phone} for {business_id}")
+                                config['deployment_phone'] = found_phone
+                                # Save back to file
+                                with open(path, 'w') as f:
+                                    json.dump(config, f, indent=2)
+                    except Exception as e:
+                        logger.warning(f"Auto-sync phone warning: {e}")
+            except: pass # Don't crash read for this
+            
+        return config
     return {}
 
 @app.route('/businesses', methods=['GET'])
