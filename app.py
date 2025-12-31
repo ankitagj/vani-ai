@@ -537,6 +537,8 @@ def setup_business():
                     # Also preserve phone ID if not in new data
                     if not data.get('vapi_phone_id'):
                         data['vapi_phone_id'] = curr_cfg.get('vapi_phone_id')
+                    if not data.get('deployment_phone'):
+                        data['deployment_phone'] = curr_cfg.get('deployment_phone')
         except Exception as e:
             logger.warning(f"Error reading existing config: {e}")
 
